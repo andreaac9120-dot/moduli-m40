@@ -7,11 +7,14 @@
   e la versione che avevano al momento della conferma.
 
   Campi della scheda:
+    rete      infrastruttura (RFI, FERROVIENORD…): raggruppa i moduli nella schermata iniziale
     id        identificativo unico (mai cambiarlo dopo l'uso: ci sono legati progressivo e archivio)
     nome      nome mostrato
     versione  versione del modello (da aggiornare a ogni modifica dei testi)
     campi     campi di testata: {id, label, span (1 o 2), ph (suggerimento)}
               tipo "ps" = progressivo/saltuario del modulo; tipo "ag" = N° DM/DCO progressivo/saltuario
+    tipo      "libero" = modulo a testo libero (Si ordina / Si dà avviso + testo), senza caselle
+    destLabel nei moduli liberi: parola prima del destinatario ("a" / "al")
     ordine    frase d'ordine; {trn} = treno, {sig} {loc} = campi da compilare, {prn} = prescrizioni n° automatico
     presc     prescrizioni: {g: gruppo (facoltativo), n: numero, t: testo con {} per i campi}
               {n, libera:true, numerata:true/false} = riga libera
@@ -20,6 +23,7 @@
 var MODULI = [
 {
   id: "dl_ba",
+  rete: "RFI",
   nome: "Mod. M.40 D.L. (B.A.)",
   versione: "v1 · 10/10/2026",
   campi: [
@@ -61,6 +65,7 @@ var MODULI = [
 },
 {
   id: "dl_bm_bca",
+  rete: "RFI",
   nome: "Mod. M.40 D.L. (B.m./B.ca.)",
   versione: "v1 · 10/10/2026",
   campi: [
@@ -98,6 +103,7 @@ var MODULI = [
 },
 {
   id: "telec_ba",
+  rete: "RFI",
   nome: "Mod. M.40 TELEC (BA)",
   versione: "v1 · 10/10/2026",
   campi: [
@@ -136,6 +142,7 @@ var MODULI = [
 },
 {
   id: "telec_bca",
+  rete: "RFI",
   nome: "Mod. M.40 TELEC (Bca)",
   versione: "v1 · 10/10/2026",
   campi: [
@@ -168,5 +175,98 @@ var MODULI = [
     {n: 18, libera: true, numerata: false},
     {n: 19, libera: true, numerata: false}
   ]
+},
+{
+  id: "fn_0229_2",
+  rete: "FERROVIENORD",
+  nome: "Mod. 0229/2 FERROVIENORD",
+  versione: "v1 · 11/10/2026",
+  campi: [
+    {id: "trn", label: "Treno N°"},
+    {id: "dat", label: "Data", ph: "gg/mm/aaaa"},
+    {tipo: "ps", label: "Progressivo / saltuario (da trasmettere all'agente trasmittente)"},
+    {id: "ora", label: "Ora di trasmissione (1)", ph: "hh:mm"},
+    {id: "agt", label: "Ag. trasmittente (profilo e cognome)", span: 2},
+    {tipo: "ag", label: "N° del DCO / DPC / DM (progressivo / saltuario comunicato dal regolatore)"}
+  ],
+  ordine: "Si ordina all'agente di condotta del treno {trn} fermo al segnale {sig} (3) di {loc} di rispettare le sotto indicate prescrizioni n° {prn} la cui casella è da barrare (o barrata in caso di consegna diretta) e di ritenere nulle le rimanenti prescrizioni.",
+  presc: [
+    {g: "ITINERARIO", n: 1, t: "Superate il segnale {} disposto a via impedita (*)."},
+    {n: 2, t: "Dovete istradarvi sul binario n° {} / verso {} (successivo posto o segnale) (2)."},
+    {n: 3, t: "Dovete istradarvi sul binario di sinistra / destra (2)."},
+    {n: 4, t: "Dovete percorrere la linea diretta / locale (2)."},
+    {n: 5, t: "Marcia a vista non superando la velocità di 30 km/h sull'itinerario interessato."},
+    {n: 6, t: "Avanzate in manovra sull'itinerario interessato, fermando oltre ciascun picchetto speciale senza impegnare i deviatoi e superate gli stessi a valle di ogni picchetto solo dopo averne accertato l'integrità e la regolare disposizione secondo quanto previsto dall'articolo 6. comma 4. delle DET. Accertate anche l'integrità e la regolare disposizione dei deviatoi non centralizzati esistenti sull'itinerario."},
+    {g: "DISTANZIAMENTO", n: 7, t: "Esiste via libera di blocco elettrico."},
+    {n: 8, t: "Blocco elettrico automatico non funziona da {} a {} Su tale tratta, che è libera da treni, escludete la funzione di ripetizione dei segnali in macchina."},
+    {n: 9, t: "Blocco elettrico conta assi non funziona da {} a {} Su tale tratta, che è libera da treni, rispettate ugualmente tutti i segnali."},
+    {n: 10, t: "Da {} a {} non tenete conto dei segnali di blocco intermedi permissivi comunque disposti, salvo quanto eventualmente notificato dalle prescrizioni n° 11 e n° 12."},
+    {n: 11, t: "Marcia a vista specifica in corrispondenza dei PL protetti dai segnali di blocco intermedi permissivi superati a via impedita o spenti."},
+    {n: 12, t: "Osservate le cautele di cui all'articolo 35.2.3. del RS superando i segnali di blocco intermedi permissivi disposti a via impedita con lettera «P» accesa a luce lampeggiante."},
+    {n: 13, t: "Osservate le cautele di cui all'articolo 35.3.2. del RS superando i segnali di protezione e/o di partenza di {} disposti a via impedita con lettera «P» accesa a luce fissa o lampeggiante (*)."},
+    {n: 14, t: "Non esiste via libera. Procedete con marcia a vista non superando la velocità di 30 km/h, salvo ricezione codice in linea, fino al successivo segnale di 1ª categoria rispettando le relative indicazioni."},
+    {g: "VARIE", n: 15, t: "Marcia a vista specifica in corrispondenza PL progressiva km {}"},
+    {n: 16, t: "Proseguite la corsa dal segnale di PBA n° {} (4) con le modalità previste dall'articolo 35.2.2. del RS."},
+    {n: 17, t: "Proseguite la corsa dal segnale di PBA n° {} (4) con le modalità previste dagli articoli 35.2.2. e 35.2.3. del RS."},
+    {n: 18, t: "Proseguite dal segnale di PBA n° {} (4) disposto a via impedita con lettera «P» spenta da considerare accesa a luce fissa / lampeggiante (2) (*)."},
+    {n: 19, libera: true, numerata: false},
+    {n: 20, libera: true, numerata: false},
+    {n: 21, libera: true, numerata: false},
+    {n: 22, libera: true, numerata: false}
+  ],
+  note: "(*) Consultare il Fascicolo linee per eventuale esistenza di avviso accoppiato al segnale da superare a via impedita. (1) Da compilare quando il modulo viene trasmesso. (2) Depennare la dizione non occorrente. (3) Indicare la funzione del segnale (con la dizione \"di protezione\", \"di protezione esterno\", \"di protezione interno n° …\", \"di protezione interno\", \"di partenza\", \"di partenza interno n° …\", \"di partenza interno\", \"di partenza esterno\", \"ripetitore di partenza\", \"di PBA n° …\" o \"n° …\"). (4) Indicare il numero identificativo del segnale."
+},
+{
+  id: "m40_normale",
+  rete: "RFI",
+  tipo: "libero",
+  nome: "Mod. M.40 (normale)",
+  versione: "v1 · 11/10/2026",
+  campi: [
+    {id: "sta", label: "Stazione (timbro)"},
+    {id: "dat", label: "Data (il … 20…)", ph: "gg/mm/aaaa"},
+    {tipo: "ps", label: "Progressivo / saltuario (mio)"},
+    {id: "ora", label: "Ora", ph: "hh:mm"},
+    {id: "agt", label: "Cognome DCO / DM", span: 2},
+    {tipo: "ag", label: "N° DCO / DM (progressivo / saltuario)"},
+    {id: "adc", label: "Cognome AdC", span: 2}
+  ],
+  destLabel: "al"
+},
+{
+  id: "m40a",
+  rete: "RFI",
+  tipo: "libero",
+  nome: "Mod. M.40 a",
+  versione: "v1 · 11/10/2026",
+  campi: [
+    {id: "trn", label: "Treno"},
+    {id: "dat", label: "Data (del … /20…)", ph: "gg/mm/aaaa"},
+    {tipo: "ps", label: "Progressivo / saltuario (mio)"},
+    {id: "ora", label: "Ora", ph: "hh:mm"},
+    {id: "agt", label: "Cognome DCO / DM", span: 2},
+    {tipo: "ag", label: "N° DCO / DM (progressivo / saltuario)"},
+    {id: "adc", label: "Cognome AdC", span: 2}
+  ],
+  destLabel: "a",
+  note: "(*) Cancellare le parole che non servono, secondo che trattasi di ordini o di avvisi. (**) Profilo di chi riceve la prescrizione aggiungendo, quando è il caso, il numero del treno. Firma: il capotreno o il macchinista."
+},
+{
+  id: "fn_0229",
+  rete: "FERROVIENORD",
+  tipo: "libero",
+  nome: "Modulo 0229 FERROVIENORD",
+  versione: "v1 · 11/10/2026",
+  campi: [
+    {id: "trn", label: "Treno"},
+    {id: "dat", label: "Data (del … /20…)", ph: "gg/mm/aaaa"},
+    {tipo: "ps", label: "Progressivo / saltuario (mio)"},
+    {id: "ora", label: "Ora", ph: "hh:mm"},
+    {id: "agt", label: "Cognome DCO / DM", span: 2},
+    {tipo: "ag", label: "N° DCO / DM (progressivo / saltuario)"},
+    {id: "adc", label: "Cognome AdC", span: 2}
+  ],
+  destLabel: "a",
+  note: "(*) Cancellare le parole che non servono, secondo che trattasi di ordini o di avvisi. (**) Profilo di chi riceve la prescrizione aggiungendo, quando è il caso, il numero del treno. Firma: il capotreno macchinista."
 }
 ];

@@ -32,6 +32,26 @@ App per compilare i moduli M.40 (D.L. B.A., D.L. B.m./B.ca., TELEC BA, TELEC Bca
 - **Genera riepilogo** → **Conferma definitivamente**: il modulo va nell'**archivio**, bloccato in sola lettura, e il progressivo di quel modulo avanza di 1.
 - **Imposta N.**: cambia il progressivo di un singolo modulo (solo quando lo decidi tu).
 - **Archivio**: cerca e riapri i moduli confermati; puoi scaricarli come testo o condividerli.
+  - Ricerca per **N° treno**, per **data** (del modulo o della conferma) e nel testo; filtro esportati / non esportati.
+  - **✕** accanto ai moduli non ancora esportati: li elimina (con conferma).
+  - **Elimina tutti i non esportati**, in fondo alla lista.
+  - **Seleziona** → spunta i moduli → **Elimina selezionati**; **Elimina questo modulo** dalla scheda del modulo.
+  - **Svuota archivio**: per confermare va scritto `ELIMINA`.
+  - **Cestino**: i moduli eliminati restano 30 giorni, poi spariscono. Da lì puoi ripristinarli o eliminarli definitivamente.
+  - Eliminare un modulo **non cambia i progressivi**.
+  - Importando un vecchio file, i moduli che avevi eliminato **non vengono reimportati**.
+  - **Consulta file esportato**: apri un file `.json` esportato e cerchi per N° treno, data o testo, anche moduli non più presenti sul telefono. È in **sola lettura**: non importa nulla e non tocca archivio, cestino o progressivi.
+
+### Moduli disponibili
+
+- **RFI**: M.40 D.L. (B.A.), M.40 D.L. (B.m./B.ca.), M.40 TELEC (BA), M.40 TELEC (Bca), M.40 (normale), M.40 a
+- **FERROVIENORD**: Mod. 0229/2 (prescrizioni con caselle), Modulo 0229 (testo libero)
+
+Ogni modulo ha il **suo progressivo**, indipendente dagli altri.
+
+**Moduli con prescrizioni numerate da barrare** (M.40 D.L., M.40 TELEC, 0229/2): sono sempre trasmessi dal DCO/DM all'AdC.
+
+**Moduli a testo libero** (M.40 normale, M.40 a, 0229): il dispaccio può andare in entrambe le direzioni, dal DCO/DM all'AdC o dall'AdC al DCO/DM. Scegli «Si ordina» o «Si dà avviso», scrivi il destinatario e il testo. Ci sono i campi progressivo/saltuario (tuo e del DCO/DM), ora, cognome DCO/DM e cognome AdC. Il cognome AdC viene ricordato e proposto automaticamente nei moduli successivi.
 
 ## 4. Copia di sicurezza (importante)
 
