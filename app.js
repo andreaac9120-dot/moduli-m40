@@ -1,6 +1,6 @@
 'use strict';
 /* App Moduli M.40 — funziona offline; tutti i dati restano sul telefono (localStorage). */
-var APP_VERSIONE = '1.6.3';
+var APP_VERSIONE = '1.6.4';
 var K_CNT = 'm40.contatori', K_ARC = 'm40.archivio', K_DRAFT = 'm40.bozza', K_EXP = 'm40.ultimaEsportazione', K_TRASH = 'm40.cestino', K_DELID = 'm40.eliminati', K_ADC = 'm40.cognomeAdc', K_TEMA = 'm40.tema', K_RETE = 'm40.rete';
 
 var LS = {
