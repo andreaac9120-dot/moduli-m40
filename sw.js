@@ -1,5 +1,5 @@
 /* Funzionamento offline. A ogni aggiornamento dell'app aumentare VERSIONE. */
-var VERSIONE = 'm40-v1.4.1';
+var VERSIONE = 'm40-v1.6.3';
 var FILE = ['./', 'index.html', 'style.css', 'moduli.js', 'app.js', 'manifest.webmanifest', 'icon.svg', 'icon-192.png', 'icon-512.png'];
 
 self.addEventListener('install', function (e) {

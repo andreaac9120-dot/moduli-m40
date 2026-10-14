@@ -27,7 +27,12 @@ App per compilare i moduli M.40 (D.L. B.A., D.L. B.m./B.ca., TELEC BA, TELEC Bca
 
 ## 3. Uso
 
+- **RFI / FERROVIENORD**: in alto nella schermata principale scegli la rete; vedi solo i suoi moduli. L'app ricorda l'ultima scelta.
+- **☾ Notte / ☀ Giorno**: cambia il tema (chiaro ad alto contrasto di giorno, scuro di notte). La scelta resta memorizzata.
 - **Compila**: scegli il modulo. La prima volta l'app chiede da che numero partire.
+- Il modulo è diviso in sezioni (Dati treno, Trasmissione, Ordine, Prescrizioni, Prescrizione libera, Riepilogo). In alto vedi sempre quante prescrizioni hai selezionato e quanti dati mancano.
+- Le prescrizioni selezionate diventano **gialle**. Se scrivi in un campo di una prescrizione, la casella si spunta da sola.
+- Dove il modello dice di depennare una dizione (**binario di sinistra / destra**, **itinerario di arrivo / partenza**, **s.b. / d.b.**) tocchi l'opzione giusta: nel riepilogo resta solo quella. Se la prescrizione è selezionata e manca la scelta, il modulo non si può confermare.
 - Il modulo in compilazione si **salva da solo** a ogni modifica: se l'app si chiude, alla riapertura riprendi da dove eri.
 - **Genera riepilogo** → **Conferma definitivamente**: il modulo va nell'**archivio**, bloccato in sola lettura, e il progressivo di quel modulo avanza di 1.
 - **Imposta N.**: cambia il progressivo di un singolo modulo (solo quando lo decidi tu).
@@ -39,7 +44,7 @@ App per compilare i moduli M.40 (D.L. B.A., D.L. B.m./B.ca., TELEC BA, TELEC Bca
   - **Svuota archivio**: per confermare va scritto `ELIMINA`.
   - **Cestino**: i moduli eliminati restano 30 giorni, poi spariscono. Da lì puoi ripristinarli o eliminarli definitivamente.
   - Eliminare un modulo **non cambia i progressivi**.
-  - Importando un vecchio file, i moduli che avevi eliminato **non vengono reimportati**.
+  - Importando un file che contiene moduli che avevi eliminato, l'app li elenca e ti chiede se **reimportarli** (Sì / No). Se rispondi Sì tornano nell'archivio e spariscono dal cestino.
   - **Consulta file esportato**: apri un file `.json` esportato e cerchi per N° treno, data o testo, anche moduli non più presenti sul telefono. È in **sola lettura**: non importa nulla e non tocca archivio, cestino o progressivi.
 
 ### Moduli disponibili
@@ -56,9 +61,13 @@ Ogni modulo ha il **suo progressivo**, indipendente dagli altri.
 ## 4. Copia di sicurezza (importante)
 
 L'archivio vive nel telefono. Se cancelli i dati di Chrome, disinstalli l'app o cambi telefono, lo perdi.
-Quando hai la linea: **Archivio → Esporta archivio**, e salva il file `.json` per esempio su Google Drive.
-Per recuperarlo: **Archivio → Importa** e scegli il file. I moduli già presenti non vengono duplicati.
-La schermata principale ti avvisa se ci sono moduli non ancora esportati.
+
+- **Salva su Drive** (Archivio): si apre il menu di condivisione di Android → scegli **Drive** → scegli la cartella (es. «Moduli M.40») → **Salva**. Il file è `.txt` (Chrome non condivide i `.json`) ma il contenuto è lo stesso. Senza linea l'app Drive lo carica appena torna la connessione.
+- **Esporta archivio**: salva il file `.json` nella cartella Download del telefono.
+- Per recuperarlo: **Archivio → Importa** e scegli il file (`.json` o `.txt`). I moduli già presenti non vengono duplicati.
+- Dalla scheda di un modulo, **Salva su Drive** salva solo quel modulo come testo.
+
+La schermata principale ti avvisa se ci sono moduli non ancora salvati.
 
 ## 5. Aggiornare l'app (nuovi moduli o prescrizioni cambiate)
 

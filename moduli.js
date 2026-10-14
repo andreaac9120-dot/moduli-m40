@@ -19,6 +19,7 @@
     presc     prescrizioni: {g: gruppo (facoltativo), n: numero, t: testo con {} per i campi}
               {n, libera:true, numerata:true/false} = riga libera
               scelta/segnaposto = opzione a scelta da indicare (es. s.b./d.b.)
+              sost:true = la scelta prende il posto del segnaposto nel testo (es. binario di sinistra / destra)
 */
 var MODULI = [
 {
@@ -39,8 +40,8 @@ var MODULI = [
   presc: [
     {g: "ITINERARIO", n: 1, t: "Partite da {} con segnale {} (2) disposto a via impedita.(*)"},
     {n: 2, t: "Superate il segnale di {} (3) di {} disposto a via impedita. (*)"},
-    {n: 3, t: "Marcia a vista non superando la velocità di 30 km/h sull'itinerario di arrivo/partenza (4) interessato. (5)"},
-    {n: 4, t: "Viaggiate da {} a {} sul binario di sinistra/destra.(4)"},
+    {n: 3, t: "Marcia a vista non superando la velocità di 30 km/h sull'itinerario di arrivo/partenza (4) interessato. (5)", scelta: ["arrivo", "partenza"], segnaposto: "arrivo/partenza", sost: true},
+    {n: 4, t: "Viaggiate da {} a {} sul binario di sinistra/destra.(4)", scelta: ["sinistra", "destra"], segnaposto: "sinistra/destra", sost: true},
     {n: 5, t: "Siete autorizzati a superare il segnale imperativo di blocco in uscita dalla stazione di {} {} disposto a via impedita. (*)"},
     {g: "DISTANZIAMENTO", n: 6, t: "Esiste via libera di blocco elettrico."},
     {n: 7, t: "Esiste via libera telefonica di {} (dispaccio N° {} / {})."},
@@ -81,8 +82,8 @@ var MODULI = [
   presc: [
     {g: "ITINERARIO", n: 1, t: "Partite da {} con segnale {} (2) disposto a via impedita.(*)"},
     {n: 2, t: "Superate il segnale di {} (3) di {} disposto a via impedita. (*)"},
-    {n: 3, t: "Marcia a vista non superando la velocità di 30 km/h sull'itinerario di arrivo/partenza (4) interessato. (5)"},
-    {n: 4, t: "Viaggiate da {} a {} sul binario di sinistra/destra.(4)"},
+    {n: 3, t: "Marcia a vista non superando la velocità di 30 km/h sull'itinerario di arrivo/partenza (4) interessato. (5)", scelta: ["arrivo", "partenza"], segnaposto: "arrivo/partenza", sost: true},
+    {n: 4, t: "Viaggiate da {} a {} sul binario di sinistra/destra.(4)", scelta: ["sinistra", "destra"], segnaposto: "sinistra/destra", sost: true},
     {n: 5, t: "Siete autorizzati a superare il segnale imperativo di blocco in uscita dalla stazione di {} {} disposto a via impedita. (*)"},
     {g: "DISTANZIAMENTO", n: 6, t: "Esiste via libera di blocco elettrico."},
     {n: 7, t: "Esiste via libera telefonica di {} (dispaccio N° {} / {})."},
@@ -117,7 +118,7 @@ var MODULI = [
   ordine: "Si ordina all'Agente di condotta del treno N° {trn} fermo al segnale {sig} (2) di {loc} di rispettare le sottoindicate prescrizioni n° {prn} la cui casella è da barrare e di ritenere nulle le rimanenti prescrizioni.",
   presc: [
     {n: 1, t: "Dovete istradarvi sul binario n° {} / verso {} (successiva LdS o segnale) (1)."},
-    {n: 2, t: "Dovete istradarvi sul binario di sinistra / destra (1)."},
+    {n: 2, t: "Dovete istradarvi sul binario di sinistra / destra (1).", scelta: ["sinistra", "destra"], segnaposto: "sinistra / destra", sost: true},
     {n: 3, t: "Dovete percorrere linea {}"},
     {n: 4, t: "Superate il segnale {} disposto a via impedita (*)."},
     {n: 5, t: "Marcia a vista non superando la velocità di 30 km/h sull'itinerario interessato (3)."},
@@ -156,7 +157,7 @@ var MODULI = [
   ordine: "Si ordina all'Agente di condotta del treno N° {trn} fermo al segnale {sig} (2) di {loc} di rispettare le sottoindicate prescrizioni n° {prn} la cui casella è da barrare e di ritenere nulle le rimanenti prescrizioni.",
   presc: [
     {n: 1, t: "Dovete istradarvi sul binario n° {} / verso {} (successiva LdS o segnale) (1)."},
-    {n: 2, t: "Dovete istradarvi sul binario di sinistra / destra (1)."},
+    {n: 2, t: "Dovete istradarvi sul binario di sinistra / destra (1).", scelta: ["sinistra", "destra"], segnaposto: "sinistra / destra", sost: true},
     {n: 3, t: "Dovete percorrere linea {}"},
     {n: 4, t: "Superate il segnale {} disposto a via impedita (*)."},
     {n: 5, t: "Marcia a vista non superando la velocità di 30 km/h sull'itinerario interessato (3)."},
@@ -193,7 +194,7 @@ var MODULI = [
   presc: [
     {g: "ITINERARIO", n: 1, t: "Superate il segnale {} disposto a via impedita (*)."},
     {n: 2, t: "Dovete istradarvi sul binario n° {} / verso {} (successivo posto o segnale) (2)."},
-    {n: 3, t: "Dovete istradarvi sul binario di sinistra / destra (2)."},
+    {n: 3, t: "Dovete istradarvi sul binario di sinistra / destra (2).", scelta: ["sinistra", "destra"], segnaposto: "sinistra / destra", sost: true},
     {n: 4, t: "Dovete percorrere la linea diretta / locale (2)."},
     {n: 5, t: "Marcia a vista non superando la velocità di 30 km/h sull'itinerario interessato."},
     {n: 6, t: "Avanzate in manovra sull'itinerario interessato, fermando oltre ciascun picchetto speciale senza impegnare i deviatoi e superate gli stessi a valle di ogni picchetto solo dopo averne accertato l'integrità e la regolare disposizione secondo quanto previsto dall'articolo 6. comma 4. delle DET. Accertate anche l'integrità e la regolare disposizione dei deviatoi non centralizzati esistenti sull'itinerario."},

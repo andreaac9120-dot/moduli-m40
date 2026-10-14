@@ -1,7 +1,7 @@
 'use strict';
 /* App Moduli M.40 — funziona offline; tutti i dati restano sul telefono (localStorage). */
-var APP_VERSIONE = '1.4.1';
-var K_CNT = 'm40.contatori', K_ARC = 'm40.archivio', K_DRAFT = 'm40.bozza', K_EXP = 'm40.ultimaEsportazione', K_TRASH = 'm40.cestino', K_DELID = 'm40.eliminati', K_ADC = 'm40.cognomeAdc';
+var APP_VERSIONE = '1.6.3';
+var K_CNT = 'm40.contatori', K_ARC = 'm40.archivio', K_DRAFT = 'm40.bozza', K_EXP = 'm40.ultimaEsportazione', K_TRASH = 'm40.cestino', K_DELID = 'm40.eliminati', K_ADC = 'm40.cognomeAdc', K_TEMA = 'm40.tema', K_RETE = 'm40.rete';
 
 var LS = {
   get: function (k, d) { try { var v = localStorage.getItem(k); return v ? JSON.parse(v) : d; } catch (e) { return d; } },
@@ -15,6 +15,15 @@ function mod(id) { for (var i = 0; i < MODULI.length; i++) if (MODULI[i].id === 
 function ora() { return new Date().toLocaleString('it-IT'); }
 function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2, 8); }
 var app = document.getElementById('app');
+/* ---------- tema chiaro / scuro ---------- */
+function applicaTema(t) { document.documentElement.setAttribute('data-theme', t); var mc = document.querySelector('meta[name=theme-color]'); if (mc) mc.setAttribute('content', t === 'dark' ? '#0E1013' : '#EEF0F3'); }
+applicaTema(LS.get(K_TEMA, 'light'));
+function temaBtn() { var d = document.documentElement.getAttribute('data-theme') === 'dark'; return '<button class="tema mini" data-tema aria-label="Cambia tema">' + (d ? '☀ Giorno' : '☾ Notte') + '</button>'; }
+document.addEventListener('click', function (e) {
+  var b = e.target.closest && e.target.closest('[data-tema]'); if (!b) return;
+  var t = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+  LS.set(K_TEMA, t); applicaTema(t); $$('[data-tema]').forEach(function (x) { x.outerHTML = temaBtn(); });
+});
 
 /* ---------- finestre di conferma dentro l'app ---------- */
 function finestra(o) {
@@ -74,7 +83,7 @@ function chiediProgressivo(m, attuale) {
 /* ---------- HOME ---------- */
 function vistaHome() {
   var bozza = LS.get(K_DRAFT, null), arc = LS.get(K_ARC, []), exp = LS.get(K_EXP, null);
-  var h = '<header class="top"><div><h1>Moduli M.40</h1><div class="sub">Prescrizioni ai treni · Captrain</div></div>' + statoRete() + '</header>';
+  var h = '<header class="top"><div><h1>Moduli M.40</h1><div class="sub">Prescrizioni ai treni · Captrain</div></div><div class="dx">' + statoRete() + temaBtn() + '</div></header>';
   if (bozza && mod(bozza.moduloId)) {
     var bm = mod(bozza.moduloId);
     h += '<div class="avviso"><b>Modulo in compilazione:</b> ' + esc(bm.nome) + ' N. ' + bozza.prog +
@@ -82,11 +91,17 @@ function vistaHome() {
   }
   var reti = [];
   MODULI.forEach(function (m) { var r = m.rete || 'RFI'; if (reti.indexOf(r) < 0) reti.push(r); });
-  reti.forEach(function (rete) {
+  var sel = LS.get(K_RETE, reti[0]);
+  if (reti.indexOf(sel) < 0) sel = reti[0];
+  h += '<div class="seg" role="tablist">' + reti.map(function (r) {
+    var n = MODULI.filter(function (m) { return (m.rete || 'RFI') === r; }).length;
+    return '<button role="tab" aria-selected="' + (r === sel) + '" class="' + (r === sel ? 'on' : '') + '" data-rete="' + esc(r) + '">' + esc(r) + ' <span class="n">' + n + '</span></button>';
+  }).join('') + '</div>';
+  [sel].forEach(function (rete) {
   h += '<h2>Compila · ' + esc(rete) + '</h2><div class="lista">';
   MODULI.filter(function (m) { return (m.rete || 'RFI') === rete; }).forEach(function (m) {
     var p = prossimo(m.id);
-    h += '<div class="card"><div class="cnome">' + esc(m.nome) + '</div><div class="cinfo">' +
+    h += '<div class="card"><div class="cardtop"><div class="cnome">' + esc(m.nome) + '</div><span class="tag' + (m.rete === 'FERROVIENORD' ? ' fn' : '') + '">' + (m.tipo === 'libero' ? 'TESTO LIBERO' : 'CASELLE') + '</span></div><div class="cinfo">' +
       (p ? 'Prossimo: <b>N. ' + p + '</b>' : '<span class="warn">Progressivo da impostare</span>') + ' · modello ' + esc(m.versione) + '</div>' +
       '<div class="riga"><button class="pri" data-compila="' + m.id + '">Compila</button><button data-imposta="' + m.id + '">Imposta N.</button></div></div>';
   });
@@ -104,6 +119,7 @@ function vistaHome() {
   $$('[data-imposta]').forEach(function (b) { b.onclick = function () { var m = mod(b.dataset.imposta); chiediProgressivo(m, prossimo(m.id)).then(vistaHome); }; });
   $$('[data-compila]').forEach(function (b) { b.onclick = function () { nuovaCompilazione(mod(b.dataset.compila)); }; });
   $('#apriArc').onclick = function () { vai('archivio'); };
+  $$('[data-rete]').forEach(function (b) { b.onclick = function () { LS.set(K_RETE, b.dataset.rete); var y = window.scrollY; vistaHome(); window.scrollTo(0, y); }; });
 }
 function statoRete() { return '<span class="rete ' + (navigator.onLine ? 'on' : 'off') + '">' + (navigator.onLine ? 'online' : 'offline') + '</span>'; }
 window.addEventListener('online', function () { $$('.rete').forEach(function (e) { e.outerHTML = statoRete(); }); });
@@ -129,38 +145,50 @@ function nuovaCompilazione(m) {
 function vistaForm() {
   var d = LS.get(K_DRAFT, null), m = d && mod(d.moduloId);
   if (!m) { vai('home', null, true); return; }
-  var h = '<header class="top"><div><button class="link" id="indietro">‹ Moduli</button><h1>' + esc(m.nome) + '</h1><div class="sub">' + esc(m.rete || 'RFI') + ' · Captrain · modello ' + esc(m.versione) + '</div></div><div class="num">N. ' + d.prog + '</div></header>';
-  h += '<div class="foglio"><div class="griglia">';
-  m.campi.forEach(function (c) {
-    if (c.tipo === 'ps') h += '<div><label>' + esc(c.label) + '</label><div class="coppia"><b>' + d.prog + '</b>/<input data-f="sal" maxlength="2" inputmode="numeric" placeholder="2 cifre"></div></div>';
-    else if (c.tipo === 'ag') h += '<div class="s2"><label>' + esc(c.label) + '</label><div class="coppia"><input data-f="agn" inputmode="numeric" placeholder="progressivo" class="w110">/<input data-f="ags" maxlength="2" inputmode="numeric" placeholder="2 cifre" class="w70"></div></div>';
-    else h += '<div' + (c.span === 2 ? ' class="s2"' : '') + '><label>' + esc(c.label) + '</label><input data-f="' + c.id + '"' + (c.ph ? ' placeholder="' + esc(c.ph) + '"' : '') + (c.id === 'ora' || c.id === 'dat' ? ' inputmode="numeric"' : '') + '></div>';
-  });
+  var h = '<header class="formtop"><div class="riga1"><button class="link" id="indietro">‹ Moduli</button><div style="display:flex;gap:8px;align-items:center">' + temaBtn() + '<span class="num">N. ' + d.prog + '</span></div></div>' +
+    '<h1>' + esc(m.nome) + '</h1><div class="sub">' + esc(m.rete || 'RFI') + ' · Captrain · modello ' + esc(m.versione) + '</div>' +
+    '<div class="stato">' + (m.tipo === 'libero' ? '' : '<span class="chip acc" id="stSel"></span>') + '<span class="chip" id="stMan"></span></div></header>';
+  h += '<div class="foglio">';
+  function campo(c) {
+    if (c.tipo === 'ps') return '<div><label>' + esc(c.label) + '</label><div class="coppia"><b>' + d.prog + '</b><span class="sl">/</span><input data-f="sal" maxlength="2" inputmode="numeric" placeholder="00"></div></div>';
+    if (c.tipo === 'ag') return '<div class="s2"><label>' + esc(c.label) + '</label><div class="coppia"><input data-f="agn" inputmode="numeric" placeholder="progr." class="w110"><span class="sl">/</span><input data-f="ags" maxlength="2" inputmode="numeric" placeholder="00" class="w70"></div></div>';
+    return '<div' + (c.span === 2 ? ' class="s2"' : '') + '><label>' + esc(c.label) + '</label><input data-f="' + c.id + '"' + (c.ph ? ' placeholder="' + esc(c.ph) + '"' : '') + (c.id === 'ora' || c.id === 'dat' || c.id === 'trn' ? ' inputmode="numeric"' : '') + '></div>';
+  }
+  var trasm = ['agt', 'adc'];
+  var cDati = m.campi.filter(function (c) { return c.tipo !== 'ag' && trasm.indexOf(c.id) < 0; });
+  var cTras = m.campi.filter(function (c) { return c.tipo === 'ag' || trasm.indexOf(c.id) >= 0; });
+  h += '<section class="sez"><div class="sez-t"><span class="l"><span class="ic">▣</span>Dati treno</span><span class="tag' + (m.rete === 'FERROVIENORD' ? ' fn' : '') + '">' + esc(m.rete || 'RFI') + '</span></div><div class="griglia">' + cDati.map(campo).join('') + '</div></section>';
+  h += '<section class="sez"><div class="sez-t"><span class="l"><span class="ic">⇄</span>Trasmissione</span></div><div class="griglia">' + cTras.map(campo).join('') + '</div></section>';
   if (m.tipo === 'libero') {
-    h += '</div><div class="gruppo">Testo del dispaccio</div>' +
+    h += '<section class="sez"><div class="sez-t"><span class="l"><span class="ic">✎</span>Testo del dispaccio</span></div>' +
       '<div class="scelte oa">' + ['Si ordina', 'Si dà avviso'].map(function (s) { return '<label><input type="radio" name="scoa" data-sc="oa" value="' + s + '"> ' + s + '</label>'; }).join('') + '</div>' +
       '<div class="dest"><span>' + esc(m.destLabel || 'a') + '</span><input data-f="dest" placeholder="profilo di chi riceve (e n° treno se è il caso)"></div>' +
-      '<textarea class="testo" data-f="testo" rows="10" placeholder="Testo esatto del dispaccio"></textarea>';
+      '<textarea class="testo" data-f="testo" rows="10" placeholder="Testo esatto del dispaccio"></textarea></section>';
   } else {
-  h += '</div><p class="ordine">' + esc(m.ordine).replace('{trn}', '<input class="inl" data-mirror="trn" disabled>').replace('{sig}', '<input class="inl" data-f="sig">').replace('{loc}', '<input class="inl" data-f="loc">').replace('{prn}', '<input class="inl" data-f="prn" readonly placeholder="automatico">') + '</p>';
-  m.presc.forEach(function (p) {
-    if (p.g) h += '<div class="gruppo">' + esc(p.g) + '</div>';
-    var t;
-    if (p.libera) t = '<input class="lib" data-p="' + p.n + '" data-k="0" placeholder="Riga libera (testo dettato)">';
-    else { var k = 0; t = esc(p.t).replace(/\{\}/g, function () { return '<input class="inl" data-p="' + p.n + '" data-k="' + (k++) + '">'; }); }
-    if (p.scelta) t += '<div class="scelte">' + p.scelta.map(function (s) { return '<label><input type="radio" name="sc' + p.n + '" data-sc="' + p.n + '" value="' + esc(s) + '"> ' + esc(s) + '</label>'; }).join(' ') + '</div>';
-    h += '<div class="pr"><input type="checkbox" data-c="' + p.n + '" aria-label="Prescrizione ' + p.n + '"><span class="n">' + (p.libera && !p.numerata ? '' : p.n) + '</span><div class="t">' + t + '</div></div>';
-  });
+    h += '<section class="sez"><div class="sez-t"><span class="l"><span class="ic">§</span>Ordine</span></div><p class="ordine">' + esc(m.ordine).replace('{trn}', '<input class="inl" data-mirror="trn" disabled>').replace('{sig}', '<input class="inl" data-f="sig" placeholder="segnale">').replace('{loc}', '<input class="inl" data-f="loc" placeholder="località">').replace('{prn}', '<input class="inl" data-f="prn" readonly placeholder="automatico">') + '</p></section>';
+    h += '<section class="sez"><div class="sez-t"><span class="l"><span class="ic">☑</span>Prescrizioni</span><button class="mini" id="rst">Azzera caselle</button></div>';
+    m.presc.forEach(function (p) {
+      if (p.g) h += '<div class="gruppo">' + esc(p.g) + '</div>';
+      var t;
+      if (p.libera) t = '<input class="lib" data-p="' + p.n + '" data-k="0" placeholder="Riga libera (testo dettato)">';
+      else { var k = 0; t = esc(p.t).replace(/\{\}/g, function () { return '<input class="inl" data-p="' + p.n + '" data-k="' + (k++) + '" placeholder="…">'; }); }
+      if (p.scelta && p.sost) t = t.replace(esc(p.segnaposto), '<span class="opz" role="radiogroup">' + p.scelta.map(function (s) { return '<label><input type="radio" name="sc' + p.n + '" data-sc="' + p.n + '" value="' + esc(s) + '"><span>' + esc(s) + '</span></label>'; }).join('') + '</span>');
+      else if (p.scelta) t += '<div class="scelte">' + p.scelta.map(function (s) { return '<label><input type="radio" name="sc' + p.n + '" data-sc="' + p.n + '" value="' + esc(s) + '"> ' + esc(s) + '</label>'; }).join(' ') + '</div>';
+      h += '<div class="pr" data-pr="' + p.n + '"><input type="checkbox" data-c="' + p.n + '" aria-label="Prescrizione ' + p.n + '"><span class="n">' + (p.libera && !p.numerata ? '' : p.n) + '</span><div class="t">' + t + '</div></div>';
+    });
+    h += '</section>';
   }
-  h += '<div' + (m.tipo === 'libero' ? ' hidden' : '') + '><div class="gruppo">Prescrizione libera dettata dal DM/RdC</div><div>È necessario inserire una prescrizione libera?</div>' +
+  h += '<section class="sez"' + (m.tipo === 'libero' ? ' hidden' : '') + '><div class="sez-t"><span class="l"><span class="ic">+</span>Prescrizione libera</span></div><div>È necessario inserire una prescrizione libera dettata dal DM/RdC?</div>' +
     '<div class="riga"><button id="ysi">Sì</button><button id="yno">No</button><span id="yst" class="err">Risposta obbligatoria</span></div>' +
-    '<textarea id="free" placeholder="Testo esatto dettato dal DM/RdC" hidden></textarea></div>' +
-    '<div class="riga"><button class="pri" id="gen">Genera riepilogo</button><button id="rst"' + (m.tipo === 'libero' ? ' hidden' : '') + '>Azzera caselle</button></div>' +
+    '<textarea id="free" placeholder="Testo esatto dettato dal DM/RdC" hidden></textarea></section>' +
+    '<section class="sez" id="sezRiep"><div class="sez-t"><span class="l"><span class="ic">✓</span>Riepilogo e conferma</span></div>' +
+    '<div class="nota">Tocca «Genera riepilogo» in basso per controllare il modulo prima del collazionamento.</div>' +
     '<div id="err" class="err"></div><pre id="out" hidden></pre>' +
     '<div id="cf" hidden><button class="pri full" id="cfb">Conferma definitivamente il modulo</button>' +
     '<div id="cfq" class="avviso" hidden>Dopo la conferma il modulo viene salvato nell\'archivio e bloccato; lo stato diventa «collazionato/confermato». Procedi solo se ' + (m.tipo === 'libero' ? 'chi riceve ha' : 'l\'AdC ha') + ' ripetuto integralmente il dispaccio e comunicato progressivo/saltuario.<div class="riga"><button class="pri" id="cfy">Sì, conferma</button><button id="cfn">Annulla</button></div></div></div>' +
     (m.note ? '<div class="nota note-mod">' + esc(m.note) + '</div>' : '') +
-    '<div class="nota">Bozza salvata automaticamente sul telefono a ogni modifica.</div></div>';
+    '<div class="nota" style="margin-top:10px">Bozza salvata automaticamente sul telefono a ogni modifica.</div></section>' +
+    '<div class="barra"><button class="pri" id="gen">Genera riepilogo</button></div></div>';
   app.innerHTML = h;
 
   // ripristino valori dalla bozza
@@ -169,7 +197,7 @@ function vistaForm() {
   $$('[data-c]').forEach(function (c) { c.checked = d.checks.indexOf(+c.dataset.c) >= 0; });
   $$('[data-sc]').forEach(function (r) { r.checked = d.scelta[r.dataset.sc] === r.value; });
   $('#free').value = d.liberaTesto || '';
-  aggiornaDerivati(); impostaLibera(d.libera, true);
+  aggiornaDerivati(); impostaLibera(d.libera, true); aggiornaStato();
 
   function salva() {
     d.v = {}; $$('[data-f]').forEach(function (i) { d.v[i.dataset.f] = i.value; });
@@ -183,17 +211,32 @@ function vistaForm() {
     var trn = $('[data-f="trn"]'); $$('[data-mirror="trn"]').forEach(function (i) { i.value = trn ? trn.value : ''; });
     var prn = $('[data-f="prn"]');
     if (prn) prn.value = $$('[data-c]').filter(function (c) { return c.checked && isNumerata(m, +c.dataset.c); }).map(function (c) { return c.dataset.c; }).join(', ');
+    $$('[data-c]').forEach(function (c) { var r = c.closest('.pr'); if (r) r.classList.toggle('on', c.checked); });
+    var ss = $('#stSel'); if (ss) { var n = $$('[data-c]').filter(function (c) { return c.checked; }).length; ss.textContent = n + (n === 1 ? ' prescrizione selezionata' : ' prescrizioni selezionate'); }
+  }
+  function aggiornaStato() {
+    var e = controlla(m, d), sm = $('#stMan'); if (!sm) return;
+    sm.className = 'chip ' + (e.length ? 'ko' : 'ok');
+    sm.textContent = e.length ? 'Mancano ' + e.length + (e.length === 1 ? ' dato' : ' dati') : 'Dati completi';
   }
   function impostaLibera(v, init) {
     d.libera = v; $('#free').hidden = v !== true;
     $('#yst').textContent = v === null || v === undefined ? 'Risposta obbligatoria' : (v ? 'Sì: inserire il testo esatto' : 'No: nessun testo libero');
     $('#yst').className = v === null || v === undefined ? 'err' : 'mut';
     $('#ysi').className = v === true ? 'sel' : ''; $('#yno').className = v === false ? 'sel' : '';
-    if (!init) salva();
+    if (!init) { salva(); aggiornaStato(); }
   }
   var foglio = $('.foglio');
-  foglio.addEventListener('input', function () { aggiornaDerivati(); salva(); });
-  foglio.addEventListener('change', function () { aggiornaDerivati(); salva(); });
+  foglio.addEventListener('input', function (e) {
+    var p = e.target.dataset && e.target.dataset.p;
+    if (p && e.target.value.trim()) { var c = $('[data-c="' + p + '"]'); if (c && !c.checked) c.checked = true; }
+    aggiornaDerivati(); salva(); aggiornaStato();
+  });
+  foglio.addEventListener('change', function (e) {
+    var sc = e.target.dataset && e.target.dataset.sc;
+    if (sc && e.target.checked) { var c = $('[data-c="' + sc + '"]'); if (c && !c.checked) c.checked = true; }
+    aggiornaDerivati(); salva(); aggiornaStato();
+  });
   $('#indietro').onclick = function () { vai('home'); };
   $('#ysi').onclick = function () { impostaLibera(true); };
   $('#yno').onclick = function () { impostaLibera(false); };
@@ -203,6 +246,7 @@ function vistaForm() {
     $('#err').textContent = e.join(' · ');
     var o = $('#out'); o.hidden = false; o.textContent = riepilogo(m, d, null); o.scrollTop = 0;
     $('#cf').hidden = false; $('#cfq').hidden = true;
+    $('#sezRiep').scrollIntoView({behavior: 'smooth', block: 'start'});
   };
   $('#cfb').onclick = function () {
     salva(); var e = controlla(m, d);
@@ -235,12 +279,14 @@ function controlla(m, d) {
   if (d.libera !== true && d.libera !== false) e.push('Rispondi Sì/No sulla prescrizione libera');
   if (d.libera === true && !(d.liberaTesto || '').trim()) e.push('Testo prescrizione libera mancante');
   if (!d.checks.length) e.push('Nessuna casella selezionata');
+  m.presc.forEach(function (p) { if (p.scelta && d.checks.indexOf(p.n) >= 0 && !d.scelta[p.n]) e.push('Prescrizione ' + p.n + ': scegli ' + p.scelta.join(' / ')); });
   return e;
 }
 function testoPresc(m, p, d) {
   if (p.libera) return (d.pv[p.n + '_0'] || '').trim() || '(vuoto)';
   var k = 0, s = p.t.replace(/\{\}/g, function () { var x = (d.pv[p.n + '_' + (k++)] || '').trim(); return x || '[MANCANTE]'; });
-  if (p.scelta) s = s.replace(p.segnaposto, d.scelta[p.n] ? '(' + d.scelta[p.n] + ')' : '[' + p.scelta.join('/') + ' MANCANTE]');
+  if (p.scelta && p.sost) s = s.replace(p.segnaposto, d.scelta[p.n] ? d.scelta[p.n] : '[' + p.scelta.join('/') + ' MANCANTE]');
+  else if (p.scelta) s = s.replace(p.segnaposto, d.scelta[p.n] ? '(' + d.scelta[p.n] + ')' : '[' + p.scelta.join('/') + ' MANCANTE]');
   return s;
 }
 function prescSelezionate(m, d) {
@@ -324,8 +370,8 @@ function vistaArchivio() {
   pulisciCestino();
   var tr = LS.get(K_TRASH, []), sel = {}, selezione = false;
   var h = '<header class="top"><div><button class="link" id="indietro">‹ Moduli</button><h1>Archivio</h1><div class="sub" id="conteggio"></div></div>' + statoRete() + '</header>';
-  h += '<div class="riga"><button class="pri" id="exp">Esporta archivio</button><button id="imp">Importa</button><button id="cest">Cestino (' + tr.length + ')</button><input type="file" id="impf" accept=".json,application/json" hidden></div>' +
-    '<div class="riga"><button class="full" id="cons">Consulta file esportato</button><input type="file" id="consf" accept=".json,application/json" hidden></div>';
+  h += '<div class="riga"><button class="pri" id="drv">Salva su Drive</button><button id="exp">Esporta archivio</button><button id="imp">Importa</button><button id="cest">Cestino (' + tr.length + ')</button><input type="file" id="impf" accept=".json,.txt,application/json,text/plain" hidden></div>' +
+    '<div class="riga"><button class="full" id="cons">Consulta file esportato</button><input type="file" id="consf" accept=".json,.txt,application/json,text/plain" hidden></div>';
   h += '<div class="card filtri"><div class="griglia">' +
     '<div><label>N° treno</label><input id="fTreno" inputmode="numeric" placeholder="es. 45120"></div>' +
     '<div><label>Data (modulo o conferma)</label><input id="fData" type="date"></div>' +
@@ -398,10 +444,11 @@ function vistaArchivio() {
   $('#indietro').onclick = function () { vai('home'); };
   $('#cest').onclick = function () { vai('cestino'); };
   $('#cons').onclick = function () { $('#consf').click(); };
-  $('#consf').onchange = function () { if (this.files[0]) apriConsulta(this.files[0]); };
+  $('#consf').onchange = function () { var f = this.files[0]; this.value = ''; if (f) apriConsulta(f); };
   $('#exp').onclick = function () { esporta(); vistaArchivio(); };
+  $('#drv').onclick = salvaSuDrive;
   $('#imp').onclick = function () { $('#impf').click(); };
-  $('#impf').onchange = function () { if (this.files[0]) importa(this.files[0]); };
+  $('#impf').onchange = function () { var f = this.files[0]; this.value = ''; if (f) importa(f); };
 }
 
 /* ---------- CESTINO ---------- */
@@ -445,13 +492,14 @@ function vistaRecord(id) {
   var ne = !esportato(r);
   var h = '<header class="top"><div><button class="link" id="indietro">‹ Archivio</button><h1>' + esc(r.nome) + ' N. ' + r.prog + '/' + esc(r.sal) + '</h1><div class="sub">Confermato il ' + esc(r.confermato) + ' · modello ' + esc(r.versioneModello) + '</div></div><span class="bloc">bloccato</span></header>';
   h += '<span class="badge ' + (ne ? 'ne' : 'es') + '">' + (ne ? 'non esportato' : 'esportato') + '</span>';
-  h += '<pre class="rec">' + esc(r.riepilogo) + '</pre><div class="riga"><button class="pri" id="txt">Scarica come testo</button>' + (navigator.share ? '<button id="sh">Condividi</button>' : '') + '<button id="home">Moduli</button></div>';
+  h += '<pre class="rec">' + esc(r.riepilogo) + '</pre><div class="riga"><button class="pri" id="txt">Scarica come testo</button><button id="drv1">Salva su Drive</button>' + (navigator.share ? '<button id="sh">Condividi</button>' : '') + '<button id="home">Moduli</button></div>';
   h += '<div class="fondo"><button class="danger-lite full" id="del">Elimina questo modulo</button></div>';
   app.innerHTML = h;
   $('#indietro').onclick = function () { vai('archivio'); };
   $('#home').onclick = function () { vai('home'); };
   $('#txt').onclick = function () { scarica(new Blob([r.riepilogo], {type: 'text/plain;charset=utf-8'}), 'M40_' + r.moduloId + '_N' + r.prog + '-' + r.sal + '.txt'); };
   if ($('#sh')) $('#sh').onclick = function () { navigator.share({title: r.nome + ' N. ' + r.prog + '/' + r.sal, text: r.riepilogo}).catch(function () {}); };
+  $('#drv1').onclick = function () { condividiFile(r.riepilogo, 'M40_' + r.moduloId + '_N' + r.prog + '-' + r.sal + '.txt', r.nome + ' N. ' + r.prog + '/' + r.sal); };
   $('#del').onclick = function () {
     conferma('Eliminare ' + descr(r) + '?' + (ne ? '\nNon è ancora stato esportato.' : '') + '\nAndrà nel cestino, da cui potrai ripristinarlo per 30 giorni.', 'Elimina', true).then(function (ok) { if (ok) { nelCestino([r.uid]); vai('archivio', null, true); } });
   };
@@ -460,13 +508,45 @@ function scarica(blob, nome) {
   var a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = nome;
   document.body.appendChild(a); a.click(); setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 1000);
 }
-function esporta() {
+function pacchettoArchivio() {
   var adesso = new Date(), iso = adesso.toISOString(), arc = LS.get(K_ARC, []);
-  var dati = {app: 'moduli-m40', formato: 1, esportato: iso, contatori: contatori(), archivio: arc};
   var p = function (n) { return (n < 10 ? '0' : '') + n; };
-  scarica(new Blob([JSON.stringify(dati, null, 1)], {type: 'application/json'}), 'm40-archivio-' + adesso.getFullYear() + p(adesso.getMonth() + 1) + p(adesso.getDate()) + '-' + p(adesso.getHours()) + p(adesso.getMinutes()) + '.json');
+  return {iso: iso, n: arc.length, testo: JSON.stringify({app: 'moduli-m40', formato: 1, esportato: iso, contatori: contatori(), archivio: arc}, null, 1),
+    nome: 'm40-archivio-' + adesso.getFullYear() + p(adesso.getMonth() + 1) + p(adesso.getDate()) + '-' + p(adesso.getHours()) + p(adesso.getMinutes())};
+}
+function segnaEsportato(iso) {
+  var arc = LS.get(K_ARC, []);
   arc.forEach(function (r) { if (!r.esportato) r.esportato = iso; });
   LS.set(K_ARC, arc); LS.set(K_EXP, iso);
+}
+function esporta() {
+  var pk = pacchettoArchivio();
+  scarica(new Blob([pk.testo], {type: 'application/json'}), pk.nome + '.json');
+  segnaEsportato(pk.iso);
+}
+/* Salva su Drive: apre il menu di condivisione di Android (scegliere Drive e la cartella).
+   Chrome non condivide file .json: il file è .txt con lo stesso contenuto, e l'app lo rilegge. */
+function condividiFile(testo, nome, titolo) {
+  var f;
+  try { f = new File([testo], nome, {type: 'text/plain'}); } catch (e) { f = null; }
+  if (!f || !navigator.canShare || !navigator.canShare({files: [f]})) {
+    avviso('Questo telefono non permette di condividere file dall\'app. Usa «Esporta archivio»: il file va nella cartella Download e da lì puoi caricarlo su Drive.');
+    return Promise.resolve(false);
+  }
+  return navigator.share({files: [f], title: titolo}).then(function () { return true; }, function (e) {
+    if (e && e.name !== 'AbortError') avviso('Condivisione non riuscita: ' + (e.message || e.name) + '. Riprova o usa «Esporta archivio».');
+    return false;
+  });
+}
+function salvaSuDrive() {
+  var pk = pacchettoArchivio();
+  if (!pk.n) { avviso('L\'archivio è vuoto: non c\'è niente da salvare.'); return; }
+  condividiFile(pk.testo, pk.nome + '.txt', 'Archivio Moduli M.40').then(function (ok) {
+    if (!ok) return;
+    segnaEsportato(pk.iso);
+    vistaArchivio();
+    avviso('File «' + pk.nome + '.txt» inviato. Se hai scelto Drive, controlla che sia comparso nella cartella: senza linea Drive lo carica appena torna la connessione.');
+  });
 }
 function importa(file) {
   var fr = new FileReader();
@@ -479,16 +559,32 @@ function importa(file) {
     LS.get(K_DELID, []).forEach(function (u) { eliminati[u] = 1; });
     var validi = dati.archivio.filter(function (r) { return r && r.uid; });
     var nuovi = validi.filter(function (r) { return !noti[r.uid] && !eliminati[r.uid]; });
-    var nElim = validi.filter(function (r) { return !noti[r.uid] && eliminati[r.uid]; }).length;
-    var nPres = validi.length - nuovi.length - nElim;
-    conferma('Importare ' + nuovi.length + ' moduli nuovi?\n' + nPres + ' già presenti' + (nElim ? ', ' + nElim + ' eliminati in precedenza (non verranno reimportati)' : '') + '.\nI progressivi verranno portati al valore più alto tra telefono e file.', 'Importa').then(function (ok) {
-    if (!ok) return;
-    nuovi.forEach(function (r) { if (!r.esportato) r.esportato = dati.esportato || new Date().toISOString(); });
-    LS.set(K_ARC, arc.concat(nuovi));
-    var c = contatori(), ci = dati.contatori || {};
-    Object.keys(ci).forEach(function (k) { if (+ci[k] > (c[k] || 0)) c[k] = +ci[k]; });
-    LS.set(K_CNT, c);
-    avviso('Importazione completata: ' + nuovi.length + ' moduli aggiunti.'); vistaArchivio();
+    var elim = validi.filter(function (r) { return !noti[r.uid] && eliminati[r.uid]; });
+    var nPres = validi.length - nuovi.length - elim.length;
+    var elenco = elim.slice(0, 5).map(function (r) { return '• ' + descr(r); }).join('\n') + (elim.length > 5 ? '\n… e altri ' + (elim.length - 5) : '');
+    (elim.length ? finestra({testo: 'Il file contiene ' + elim.length + (elim.length === 1 ? ' modulo che avevi eliminato' : ' moduli che avevi eliminato') + ':\n' + elenco + '\n\nVuoi reimportare anche ' + (elim.length === 1 ? 'questo modulo?' : 'questi moduli?'), ok: 'Sì, reimporta', annulla: 'No'}) : Promise.resolve(false)).then(function (anche) {
+      var daImp = anche ? nuovi.concat(elim) : nuovi;
+      if (!daImp.length) {
+        avviso('Nessun modulo da importare: ' + nPres + ' già presenti nell\'archivio' + (elim.length ? ', ' + elim.length + ' eliminati in precedenza (non reimportati)' : '') + '.');
+        return;
+      }
+      var testo = 'Importare ' + daImp.length + (daImp.length === 1 ? ' modulo?' : ' moduli?') + '\n' + nPres + ' già presenti';
+      if (elim.length) testo += anche ? ', ' + elim.length + ' eliminati in precedenza (verranno reimportati)' : ', ' + elim.length + ' eliminati in precedenza (non verranno reimportati)';
+      testo += '.\nI progressivi verranno portati al valore più alto tra telefono e file.';
+      return conferma(testo, 'Importa').then(function (ok) {
+        if (!ok) return;
+        daImp.forEach(function (r) { if (!r.esportato) r.esportato = dati.esportato || new Date().toISOString(); });
+        if (anche && elim.length) {
+          var via = {}; elim.forEach(function (r) { via[r.uid] = 1; });
+          LS.set(K_TRASH, LS.get(K_TRASH, []).filter(function (t) { return !via[t.rec.uid]; }));
+          LS.set(K_DELID, LS.get(K_DELID, []).filter(function (u) { return !via[u]; }));
+        }
+        LS.set(K_ARC, arc.concat(daImp));
+        var c = contatori(), ci = dati.contatori || {};
+        Object.keys(ci).forEach(function (k) { if (+ci[k] > (c[k] || 0)) c[k] = +ci[k]; });
+        LS.set(K_CNT, c);
+        avviso('Importazione completata: ' + daImp.length + (daImp.length === 1 ? ' modulo aggiunto.' : ' moduli aggiunti.')); vistaArchivio();
+      });
     });
   };
   fr.readAsText(file);
