@@ -1,6 +1,6 @@
 'use strict';
 /* App Moduli M.40 — funziona offline; tutti i dati restano sul telefono (localStorage). */
-var APP_VERSIONE = '1.6.5';
+var APP_VERSIONE = '1.7.0';
 var K_CNT = 'm40.contatori', K_ARC = 'm40.archivio', K_DRAFT = 'm40.bozza', K_EXP = 'm40.ultimaEsportazione', K_TRASH = 'm40.cestino', K_DELID = 'm40.eliminati', K_ADC = 'm40.cognomeAdc', K_TEMA = 'm40.tema', K_RETE = 'm40.rete';
 
 var LS = {
@@ -16,7 +16,7 @@ function ora() { return new Date().toLocaleString('it-IT'); }
 function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2, 8); }
 var app = document.getElementById('app');
 /* ---------- tema chiaro / scuro ---------- */
-function applicaTema(t) { document.documentElement.setAttribute('data-theme', t); var mc = document.querySelector('meta[name=theme-color]'); if (mc) mc.setAttribute('content', t === 'dark' ? '#0E1013' : '#EEF0F3'); }
+function applicaTema(t) { document.documentElement.setAttribute('data-theme', t); var mc = document.querySelector('meta[name=theme-color]'); if (mc) mc.setAttribute('content', t === 'dark' ? '#111214' : '#F4F6F9'); }
 applicaTema(LS.get(K_TEMA, 'light'));
 function temaBtn() { var d = document.documentElement.getAttribute('data-theme') === 'dark'; return '<button class="tema mini" data-tema aria-label="Cambia tema">' + (d ? '☀ Giorno' : '☾ Notte') + '</button>'; }
 document.addEventListener('click', function (e) {

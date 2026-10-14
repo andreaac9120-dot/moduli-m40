@@ -1,6 +1,6 @@
 /* Funzionamento offline. A ogni aggiornamento dell'app aumentare VERSIONE.
    I file vengono sempre scaricati freschi dal server (cache: 'reload'), non dalla memoria temporanea del browser. */
-var VERSIONE = 'm40-v1.6.5';
+var VERSIONE = 'm40-v1.7.0';
 var FILE = ['./', 'index.html', 'style.css', 'moduli.js', 'app.js', 'manifest.webmanifest', 'icon.svg', 'icon-192.png', 'icon-512.png'];
 
 self.addEventListener('install', function (e) {
