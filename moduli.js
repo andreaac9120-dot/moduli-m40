@@ -181,7 +181,7 @@ var MODULI = [
   id: "fn_0229_2",
   rete: "FERROVIENORD",
   nome: "Mod. 0229/2 FERROVIENORD",
-  versione: "v1 · 11/10/2026",
+  versione: "v2 · 20/10/2026",
   campi: [
     {id: "trn", label: "Treno N°"},
     {id: "dat", label: "Data", ph: "gg/mm/aaaa"},
@@ -193,9 +193,9 @@ var MODULI = [
   ordine: "Si ordina all'agente di condotta del treno {trn} fermo al segnale {sig} (3) di {loc} di rispettare le sotto indicate prescrizioni n° {prn} la cui casella è da barrare (o barrata in caso di consegna diretta) e di ritenere nulle le rimanenti prescrizioni.",
   presc: [
     {g: "ITINERARIO", n: 1, t: "Superate il segnale {} disposto a via impedita (*)."},
-    {n: 2, t: "Dovete istradarvi sul binario n° {} / verso {} (successivo posto o segnale) (2)."},
+    {n: 2, t: "Dovete istradarvi sul binario n° {} / verso {} (successivo posto o segnale) (2).", scelta: ["binario", "verso"], segnaposto: "(2)"},
     {n: 3, t: "Dovete istradarvi sul binario di sinistra / destra (2).", scelta: ["sinistra", "destra"], segnaposto: "sinistra / destra", sost: true},
-    {n: 4, t: "Dovete percorrere la linea diretta / locale (2)."},
+    {n: 4, t: "Dovete percorrere la linea diretta / locale (2).", scelta: ["diretta", "locale"], segnaposto: "diretta / locale", sost: true},
     {n: 5, t: "Marcia a vista non superando la velocità di 30 km/h sull'itinerario interessato."},
     {n: 6, t: "Avanzate in manovra sull'itinerario interessato, fermando oltre ciascun picchetto speciale senza impegnare i deviatoi e superate gli stessi a valle di ogni picchetto solo dopo averne accertato l'integrità e la regolare disposizione secondo quanto previsto dall'articolo 6. comma 4. delle DET. Accertate anche l'integrità e la regolare disposizione dei deviatoi non centralizzati esistenti sull'itinerario."},
     {g: "DISTANZIAMENTO", n: 7, t: "Esiste via libera di blocco elettrico."},
@@ -209,7 +209,7 @@ var MODULI = [
     {g: "VARIE", n: 15, t: "Marcia a vista specifica in corrispondenza PL progressiva km {}"},
     {n: 16, t: "Proseguite la corsa dal segnale di PBA n° {} (4) con le modalità previste dall'articolo 35.2.2. del RS."},
     {n: 17, t: "Proseguite la corsa dal segnale di PBA n° {} (4) con le modalità previste dagli articoli 35.2.2. e 35.2.3. del RS."},
-    {n: 18, t: "Proseguite dal segnale di PBA n° {} (4) disposto a via impedita con lettera «P» spenta da considerare accesa a luce fissa / lampeggiante (2) (*)."},
+    {n: 18, t: "Proseguite dal segnale di PBA n° {} (4) disposto a via impedita con lettera «P» spenta da considerare accesa a luce fissa / lampeggiante (2) (*).", scelta: ["fissa", "lampeggiante"], segnaposto: "fissa / lampeggiante", sost: true},
     {n: 19, libera: true, numerata: false},
     {n: 20, libera: true, numerata: false},
     {n: 21, libera: true, numerata: false},
@@ -257,17 +257,21 @@ var MODULI = [
   rete: "FERROVIENORD",
   tipo: "libero",
   nome: "Modulo 0229 FERROVIENORD",
-  versione: "v1 · 11/10/2026",
+  versione: "v3 · 20/10/2026",
   campi: [
+    {id: "sta", label: "Località di servizio"},
     {id: "trn", label: "Treno"},
     {id: "dat", label: "Data (del … /20…)", ph: "gg/mm/aaaa"},
     {tipo: "ps", label: "Progressivo / saltuario (mio)"},
     {id: "ora", label: "Ora", ph: "hh:mm"},
-    {id: "agt", label: "Cognome DCO / DM", span: 2},
-    {tipo: "ag", label: "N° DCO / DM (progressivo / saltuario)"},
-    {id: "adc", label: "Cognome AdC", span: 2}
+    {id: "agt", label: "Agente trasmittente (profilo e cognome)", span: 2},
+    {tipo: "ag", label: "N° agente trasmittente (progressivo / saltuario)"},
+    {id: "ord", label: "Agente che dà l'ordine o l'avviso (profilo e firma)", span: 2},
+    {id: "adc", label: "Agente ricevente (profilo e cognome / firma)", span: 2},
+    {id: "ricevProg", label: "N° comunicato dal ricevente: progressivo"},
+    {id: "ricevSal", label: "N° comunicato dal ricevente: saltuario"}
   ],
   destLabel: "a",
-  note: "(*) Cancellare le parole che non servono, secondo che trattasi di ordini o di avvisi. (**) Profilo di chi riceve la prescrizione aggiungendo, quando è il caso, il numero del treno. Firma: il capotreno macchinista."
+  note: "Nel 0229 i ruoli possono cambiare: compila a mano solo i riquadri degli agenti pertinenti. Il profilo personale non firma automaticamente questo modulo. Il numero comunicato dal ricevente va inserito solo quando è noto."
 }
 ];

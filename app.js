@@ -1,6 +1,6 @@
 'use strict';
 /* App Moduli M.40 — funziona offline; tutti i dati restano sul telefono (localStorage). */
-var APP_VERSIONE = '1.14.0-local-data-ora';
+var APP_VERSIONE = '1.15.1-ruoli-0229';
 var K_CNT = 'm40.contatori', K_ARC = 'm40.archivio', K_DRAFT = 'm40.bozza', K_EXP = 'm40.ultimaEsportazione', K_TRASH = 'm40.cestino', K_DELID = 'm40.eliminati', K_ADC = 'm40.cognomeAdc', K_PROFILO = 'm40.profilo', K_TEMA = 'm40.tema', K_RETE = 'm40.rete';
 
 var LS = {
@@ -146,7 +146,7 @@ function profiloCompleto(p) { return !!(p && (p.nome || '').trim() && (p.cognome
 function vistaImpostazioni() {
   var p = LS.get(K_PROFILO, {}) || {};
   app.innerHTML = '<header class="top"><div><button class="link" id="indietro">‹ Moduli</button><h1>Impostazioni</h1><div class="sub">Dati personali per la compilazione</div></div>' + temaBtn() + '</header>' +
-    '<section class="sez"><div class="sez-t"><span class="l"><span class="ic">♙</span>Il mio profilo</span></div><p class="nota">Il cognome viene proposto nel campo Agente ricevente dei moduli D.L. e nel campo AdC degli altri moduli. Nome, cognome e matricola vengono riportati in basso sui moduli liberi RFI.</p>' +
+    '<section class="sez"><div class="sez-t"><span class="l"><span class="ic">♙</span>Il mio profilo</span></div><p class="nota">Il cognome viene proposto nel campo Agente ricevente dei moduli D.L. e nel campo AdC degli altri moduli, escluso il 0229 FERROVIENORD: lì i ruoli si compilano manualmente. Nome, cognome e matricola vengono riportati in basso sui moduli liberi RFI.</p>' +
     '<div class="griglia"><div><label for="profiloNome">Nome</label><input id="profiloNome" autocomplete="given-name"></div><div><label for="profiloCognome">Cognome</label><input id="profiloCognome" autocomplete="family-name"></div><div class="s2"><label for="profiloMatricola">Numero di matricola</label><input id="profiloMatricola" autocomplete="off"></div></div>' +
     '<div id="profiloErr" class="err" role="alert"></div><button class="pri full" id="salvaProfilo">Salva profilo</button></section>';
   $('#profiloNome').value = p.nome || ''; $('#profiloCognome').value = p.cognome || ''; $('#profiloMatricola').value = p.matricola || '';
@@ -157,7 +157,7 @@ function vistaImpostazioni() {
     if (!LS.set(K_PROFILO, nuovo)) return;
     LS.set(K_ADC, nuovo.cognome);
     var d = LS.get(K_DRAFT, null);
-    if (d) { if (!d.v) d.v={}; if (!d.v.adc || d.v.adc === p.cognome) d.v.adc = nuovo.cognome; d.firmatario = nuovo; LS.set(K_DRAFT, d); }
+    if (d && d.moduloId !== 'fn_0229') { if (!d.v) d.v={}; if (!d.v.adc || d.v.adc === p.cognome) d.v.adc = nuovo.cognome; d.firmatario = nuovo; LS.set(K_DRAFT, d); }
     vai('home');
   };
 }
@@ -171,8 +171,8 @@ function nuovaCompilazione(m) {
     var p = prossimo(m.id);
     (p ? Promise.resolve(p) : chiediProgressivo(m, null)).then(function (p) {
       if (!p) return;
-      var profilo = LS.get(K_PROFILO, null), now = new Date(), v0 = {adc: profiloCompleto(profilo) ? profilo.cognome : LS.get(K_ADC, ''), dat: dataCorrente(now), ora: oraCorrente(now)};
-      LS.set(K_DRAFT, {moduloId: m.id, prog: p, v: v0, pv: {}, checks: [], scelta: {}, compilatoreAG: false, firmatario: profiloCompleto(profilo) ? profilo : null, libera: m.tipo === 'libero' ? false : null, liberaTesto: '', creato: new Date().toISOString()});
+      var profilo = LS.get(K_PROFILO, null), now = new Date(), v0 = {adc: m.id === 'fn_0229' ? '' : (profiloCompleto(profilo) ? profilo.cognome : LS.get(K_ADC, '')), dat: dataCorrente(now), ora: oraCorrente(now)};
+      LS.set(K_DRAFT, {moduloId: m.id, prog: p, v: v0, pv: {}, checks: [], scelta: {}, compilatoreAG: false, firmatario: m.id === 'fn_0229' ? null : (profiloCompleto(profilo) ? profilo : null), libera: m.tipo === 'libero' ? false : null, liberaTesto: '', creato: new Date().toISOString()});
       vai('form');
     });
   }
@@ -202,12 +202,12 @@ function vistaForm() {
     }
     return '<div' + (c.span === 2 ? ' class="s2"' : '') + '><label>' + esc(c.label) + '</label><input data-f="' + c.id + '"' + (c.ph ? ' placeholder="' + esc(c.ph) + '"' : '') + (c.id === 'ora' || c.id === 'dat' || c.id === 'trn' ? ' inputmode="numeric"' : '') + '></div>';
   }
-  var trasm = ['agt', 'adc'];
+  var trasm = ['agt', 'adc', 'ord', 'ricevProg', 'ricevSal'];
   var cDati = m.campi.filter(function (c) { return c.tipo !== 'ag' && trasm.indexOf(c.id) < 0; });
   var cTras = m.campi.filter(function (c) { return c.tipo === 'ag' || trasm.indexOf(c.id) >= 0; });
   if (!m.campi.some(function (c) { return c.id === 'adc'; })) cTras.push({id:'adc',label:M40Pdf.hasGuardColumn(m.id) ? 'Cognome agente ricevente (proposto dal profilo)' : 'Cognome AdC (proposto dal profilo)',span:2});
   h += '<section class="sez"><div class="sez-t"><span class="l"><span class="ic">▣</span>Dati treno</span><span class="tag' + (m.rete === 'FERROVIENORD' ? ' fn' : '') + '">' + esc(m.rete || 'RFI') + '</span></div><div class="griglia">' + cDati.map(campo).join('') + '</div></section>';
-  h += '<section class="sez"><div class="sez-t"><span class="l"><span class="ic">⇄</span>Trasmissione</span></div><div class="griglia">' + cTras.map(campo).join('') + '</div></section>';
+  h += '<section class="sez"><div class="sez-t"><span class="l"><span class="ic">⇄</span>Trasmissione</span></div><div class="griglia">' + cTras.map(campo).join('') + '</div>' + (m.id === 'fn_0229' ? '<p class="nota">Indica manualmente chi dà l’ordine, chi trasmette e chi riceve. Lascia vuoti i riquadri non ancora compilati. Il profilo personale non viene inserito in automatico.</p>' : '') + '</section>';
   if (m.tipo === 'libero') {
     h += '<section class="sez"><div class="sez-t"><span class="l"><span class="ic">✎</span>Testo del dispaccio</span></div>' +
       '<div class="scelte oa">' + ['Si ordina', 'Si dà avviso'].map(function (s) { return '<label><input type="radio" name="scoa" data-sc="oa" value="' + s + '"> ' + s + '</label>'; }).join('') + '</div>' +
@@ -328,7 +328,7 @@ function vistaForm() {
   if ($('#pdfBozza')) $('#pdfBozza').onclick = function () {
     salva(); var e = controlla(m, d);
     if (e.length) { $('#err').textContent = 'Prima di generare il PDF completa: ' + e.join(' · '); return; }
-    scaricaPdf({moduloId:m.id,nome:m.nome,prog:d.prog,sal:d.v.sal,campi:d.v,
+    scaricaPdf({moduloId:m.id,nome:m.nome,versioneModello:m.versione,prog:d.prog,sal:d.v.sal,campi:d.v,
       presc:prescSelezionate(m,d),libera:d.libera === true ? d.liberaTesto : null,
       scelta:d.scelta,pv:d.pv,compilatoreAG:d.compilatoreAG===true,firmatario:d.firmatario}, true);
   };
@@ -355,13 +355,13 @@ function numeriPrescrizioni(m, checks) { return checks.filter(function (n) { ret
 function controlla(m, d) {
   var e = [], v = d.v;
   if (!/^\d{2}$/.test(v.sal || '')) e.push('Numero saltuario (2 cifre) mancante');
-  if (!(v.agn || '').trim() || !/^\d{2}$/.test(v.ags || '')) e.push(m.tipo === 'libero' ? 'N° DCO/DM (progressivo/saltuario 2 cifre) mancante' : 'N° DM/DCO trasmittente (progressivo/saltuario 2 cifre) mancante');
+  if (!(v.agn || '').trim() || !/^\d{2}$/.test(v.ags || '')) e.push(m.id === 'fn_0229' ? 'N° agente trasmittente (progressivo/saltuario 2 cifre) mancante' : m.tipo === 'libero' ? 'N° DCO/DM (progressivo/saltuario 2 cifre) mancante' : 'N° DM/DCO trasmittente (progressivo/saltuario 2 cifre) mancante');
   if (m.tipo === 'libero') {
     if (!d.scelta.oa) e.push('Scegli «Si ordina» o «Si dà avviso»');
     if (!(v.dest || '').trim()) e.push('Destinatario mancante');
     if (!(v.testo || '').trim()) e.push('Testo del dispaccio mancante');
-    if (!(v.agt || '').trim()) e.push('Cognome DCO/DM mancante');
-    if (!(v.adc || '').trim()) e.push('Cognome AdC mancante');
+    if (!(v.agt || '').trim()) e.push(m.id === 'fn_0229' ? 'Agente trasmittente mancante' : 'Cognome DCO/DM mancante');
+    if (m.id !== 'fn_0229' && !(v.adc || '').trim()) e.push('Cognome AdC mancante');
     return e;
   }
   if (d.libera !== true && d.libera !== false) e.push('Rispondi Sì/No sulla prescrizione libera');
@@ -370,12 +370,22 @@ function controlla(m, d) {
   m.presc.forEach(function (p) { if (p.scelta && d.checks.indexOf(p.n) >= 0 && !d.scelta[p.n]) e.push('Prescrizione ' + p.n + ': scegli ' + p.scelta.join(' / ')); });
   m.presc.forEach(function (p) {
     if (d.checks.indexOf(p.n) < 0) return;
+    if (m.id === 'fn_0229_2' && p.n === 2) {
+      if (d.scelta[2] && !(d.pv['2_' + (d.scelta[2] === 'verso' ? 1 : 0)] || '').trim())
+        e.push('Prescrizione 2: compila il ' + (d.scelta[2] === 'verso' ? 'posto o segnale' : 'numero del binario'));
+      return;
+    }
     var n = p.libera ? 1 : (p.t.match(/\{\}/g) || []).length;
     for (var k = 0; k < n; k++) if (!(d.pv[p.n + '_' + k] || '').trim()) e.push('Prescrizione ' + p.n + ': campo ' + (k + 1) + ' mancante');
   });
   return e;
 }
 function testoPresc(m, p, d) {
+  if (m.id === 'fn_0229_2' && p.n === 2) {
+    return d.scelta[2] === 'verso'
+      ? 'Dovete istradarvi verso ' + ((d.pv['2_1'] || '').trim() || '[MANCANTE]') + ' (successivo posto o segnale).'
+      : 'Dovete istradarvi sul binario n° ' + ((d.pv['2_0'] || '').trim() || '[MANCANTE]') + '.';
+  }
   if (p.libera) return (d.pv[p.n + '_0'] || '').trim() || '(vuoto)';
   var k = 0, s = p.t.replace(/\{\}/g, function () { var x = (d.pv[p.n + '_' + (k++)] || '').trim(); return x || '[MANCANTE]'; });
   if (p.scelta && p.sost) s = s.replace(p.segnaposto, d.scelta[p.n] ? d.scelta[p.n] : '[' + p.scelta.join('/') + ' MANCANTE]');
@@ -393,6 +403,11 @@ function valoreRiepilogo(value) {
   return value != null && String(value).trim() ? '<strong class="valore-letto">' + esc(String(value).trim()) + '</strong>' : '<strong class="dato-mancante">Da completare</strong>';
 }
 function prescrizioneHtml(p, d) {
+  if (d.moduloId === 'fn_0229_2' && p.n === 2) {
+    return d.scelta[2] === 'verso'
+      ? 'Dovete istradarvi verso ' + valoreRiepilogo(d.pv['2_1']) + ' (successivo posto o segnale).'
+      : 'Dovete istradarvi sul binario n° ' + valoreRiepilogo(d.pv['2_0']) + '.';
+  }
   if (p.libera) return valoreRiepilogo(d.pv[p.n + '_0']);
   var parts = p.t.split('{}');
   return parts.map(function (part, i) {
@@ -410,14 +425,20 @@ function riepilogoHtml(m, d) {
   function section(title, content) { sections.push('<section class="lettura-blocco" data-read-step tabindex="-1"><h3>' + esc(title) + '</h3>' + content + '</section>'); }
   var dati = dato('Progressivo del modulo', d.prog) + dato('Saltuario del modulo', v.sal);
   m.campi.forEach(function (c) {
-    if (!c.tipo && ['agt', 'adc', 'ora'].indexOf(c.id) < 0) dati += dato(c.label, v[c.id]);
+    if (!c.tipo && ['agt', 'adc', 'ora', 'ord', 'ricevProg', 'ricevSal'].indexOf(c.id) < 0) dati += dato(c.label, v[c.id]);
   });
   if (M40Pdf.hasGuardColumn(m.id) && d.compilatoreAG === true) dati += dato('Colonna delle prescrizioni da barrare', 'A.G. (destra)');
   section('Identificazione del modulo', '<dl class="lettura-dati">' + dati + '</dl>');
-  section('Dati di trasmissione', '<dl class="lettura-dati">' + dato('Ora di trasmissione', v.ora) + dato(m.tipo === 'libero' ? 'DCO / DM' : 'Agente trasmittente', v.agt) +
-    dato(M40Pdf.hasGuardColumn(m.id) && d.compilatoreAG === true ? 'Progressivo A.G.' : 'Progressivo DCO / DM', v.agn) + dato(M40Pdf.hasGuardColumn(m.id) && d.compilatoreAG === true ? 'Saltuario A.G.' : 'Saltuario DCO / DM', v.ags) +
-    dato(M40Pdf.hasGuardColumn(m.id) ? 'Cognome agente ricevente' : 'Cognome AdC', v.adc) + '</dl>');
-  if (m.tipo === 'libero' && d.firmatario && profiloCompleto(d.firmatario)) section('Firma nel modulo', '<dl class="lettura-dati">' + dato('Nome e cognome', d.firmatario.nome + ' ' + d.firmatario.cognome) + dato('Matricola', d.firmatario.matricola) + '</dl>');
+  var trasmissione = dato('Ora di trasmissione', v.ora) + dato(m.id === 'fn_0229' ? 'Agente trasmittente' : m.tipo === 'libero' ? 'DCO / DM' : 'Agente trasmittente', v.agt) +
+    dato(m.id === 'fn_0229' ? 'Progressivo agente trasmittente' : M40Pdf.hasGuardColumn(m.id) && d.compilatoreAG === true ? 'Progressivo A.G.' : 'Progressivo DCO / DM', v.agn) + dato(m.id === 'fn_0229' ? 'Saltuario agente trasmittente' : M40Pdf.hasGuardColumn(m.id) && d.compilatoreAG === true ? 'Saltuario A.G.' : 'Saltuario DCO / DM', v.ags) +
+    (m.id === 'fn_0229' ? '' : dato(M40Pdf.hasGuardColumn(m.id) ? 'Cognome agente ricevente' : 'Cognome AdC', v.adc));
+  if (m.id === 'fn_0229') {
+    if (v.ord) trasmissione += dato('Agente che dà l’ordine o l’avviso', v.ord);
+    if (v.adc) trasmissione += dato('Agente ricevente', v.adc);
+    if (v.ricevProg || v.ricevSal) trasmissione += dato('Numero comunicato dal ricevente', (v.ricevProg || '…') + '/' + (v.ricevSal || '…'));
+  }
+  section('Dati di trasmissione', '<dl class="lettura-dati">' + trasmissione + '</dl>');
+  if (m.tipo === 'libero' && m.id !== 'fn_0229' && d.firmatario && profiloCompleto(d.firmatario)) section('Firma nel modulo', '<dl class="lettura-dati">' + dato('Nome e cognome', d.firmatario.nome + ' ' + d.firmatario.cognome) + dato('Matricola', d.firmatario.matricola) + '</dl>');
   if (m.tipo === 'libero') {
     section('Dispaccio da ripetere', '<p class="lettura-frase">' + valoreRiepilogo(d.scelta.oa) + ' ' + esc(m.destLabel || 'a') + ' ' + valoreRiepilogo(v.dest) + '</p><div class="lettura-testo">' + valoreRiepilogo(v.testo) + '</div>');
   } else {
@@ -465,14 +486,17 @@ function riepilogo(m, d, confermato) {
   var v = d.v, M = function (x) { return (x || '').trim() || '[MANCANTE]'; }, L = [];
   L.push('RIEPILOGO PER COLLAZIONAMENTO (non è la trascrizione integrale)');
   L.push(m.nome + ' N. ' + d.prog + '/' + M(v.sal) + '  ·  modello ' + m.versione);
-  m.campi.forEach(function (c) { if (!c.tipo) L.push(c.label + ': ' + M(v[c.id])); });
+  m.campi.forEach(function (c) {
+    if (!c.tipo && (m.id !== 'fn_0229' || ['ord', 'adc', 'ricevProg', 'ricevSal'].indexOf(c.id) < 0 || (v[c.id] || '').trim()))
+      L.push(c.label + ': ' + M(v[c.id]));
+  });
   if (m.tipo === 'libero') {
-    L.push('N° DCO/DM: ' + M(v.agn) + '/' + M(v.ags));
+    L.push((m.id === 'fn_0229' ? 'N° agente trasmittente: ' : 'N° DCO/DM: ') + M(v.agn) + '/' + M(v.ags));
     L.push('');
     L.push((d.scelta.oa ? d.scelta.oa.toUpperCase() : '[SI ORDINA / SI DÀ AVVISO MANCANTE]') + ' ' + (m.destLabel || 'a') + ' ' + M(v.dest) + ':');
     L.push(M(v.testo));
     L.push('');
-    if (d.firmatario && profiloCompleto(d.firmatario)) L.push('Firma nel modulo: ' + d.firmatario.nome + ' ' + d.firmatario.cognome + ' · Matricola ' + d.firmatario.matricola);
+    if (m.id !== 'fn_0229' && d.firmatario && profiloCompleto(d.firmatario)) L.push('Firma nel modulo: ' + d.firmatario.nome + ' ' + d.firmatario.cognome + ' · Matricola ' + d.firmatario.matricola);
     L.push('Stato: ' + (confermato ? 'collazionato/confermato' : 'bozza'));
     L.push('Spazi non utilizzati: annullare con riga continua.');
     L.push('Dispaccio NON trasmesso finché chi riceve non ripete integralmente e comunica progressivo/saltuario.');
@@ -506,7 +530,7 @@ function registra(m, d) {
   };
   var arc = LS.get(K_ARC, []); arc.push(rec);
   if (!LS.set(K_ARC, arc)) return null;
-  if ((d.v.adc || '').trim()) LS.set(K_ADC, d.v.adc.trim());
+  if (m.id !== 'fn_0229' && (d.v.adc || '').trim()) LS.set(K_ADC, d.v.adc.trim());
   var c = contatori(); c[m.id] = Math.max(c[m.id] || 0, d.prog + 1); LS.set(K_CNT, c);
   LS.del(K_DRAFT);
   return rec;
@@ -680,7 +704,7 @@ function scarica(blob, nome) {
   document.body.appendChild(a); a.click(); setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 1000);
 }
 function creaPdf(r) {
-  return fetch('assets/moduli-originali.pdf').then(function (res) {
+  return fetch(M40Pdf.source(r.moduloId)).then(function (res) {
     if (!res.ok) throw new Error('Modelli PDF non disponibili (' + res.status + ').');
     return res.arrayBuffer();
   }).then(function (bytes) { return M40Pdf.build(r, bytes); });
@@ -688,7 +712,7 @@ function creaPdf(r) {
 function consultaRetro(id) {
   var tab = window.open('', '_blank');
   if (tab) { tab.document.title = 'Retro del modulo'; tab.document.body.textContent = 'Caricamento del retro…'; }
-  fetch('assets/moduli-originali.pdf').then(function (res) { if (!res.ok) throw new Error('Modello non disponibile.'); return res.arrayBuffer(); })
+  fetch(M40Pdf.source(id)).then(function (res) { if (!res.ok) throw new Error('Modello non disponibile.'); return res.arrayBuffer(); })
     .then(function (bytes) { return M40Pdf.buildBack(id, bytes); })
     .then(function (bytes) {
       var url = URL.createObjectURL(new Blob([bytes], {type:'application/pdf'}));

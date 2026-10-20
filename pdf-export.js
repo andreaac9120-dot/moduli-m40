@@ -4,6 +4,13 @@
   'use strict';
   var MODELLI = {
     m40_normale: {pages:[0],kind:'libero'}, m40a: {pages:[1],kind:'libero'},
+    fn_0229: {pages:[0],kind:'fn_libero',source:'assets/moduli-ferrovienord.pdf'},
+    fn_0229_2: {pages:[1,2],kind:'fn_presc',source:'assets/moduli-ferrovienord.pdf',firstFree:19,left:33,textX:51,textW:437,
+      centers:[168,183,198,213,228,259,294,314,339,364,389,414,439,464,489,512,527,547,568,583,598],
+      rows:[[159,175],[175,190],[190,205],[205,220],[220,235],[235,282],[282,300],[300,325],[325,350],[350,375],[375,400],[400,425],[425,450],[450,475],[475,505],[505,520],[520,535],[535,560],[560,575],[575,590],[590,605]],
+      slots:{1:[[125,173,162]],2:[[171,188,35],[239,188,80]],8:[[231,313,80],[325,313,80]],9:[[227,338,80],[323,338,81]],10:[[65,363,90],[167,363,89]],13:[[52,450,80]],15:[[282,491,205]],16:[[207,518,33]],17:[[207,533,33]],18:[[177,549,33]]},
+      choices:{2:{binario:[209,321,184],verso:[131,208,184]},3:{sinistra:[169,197,200],destra:[204,229,200]},4:{diretta:[153,179,215],locale:[186,209,215]},18:{fissa:[75,93,554],lampeggiante:[100,152,554]}},
+      header:{dat:[279,56,101],agent:[270,71,25,303,25],ora:[337,85,50],trn:[181,103,51],sig:[303,103,174],loc:[25,121,108],prn:[313,121,177],number:[440,37,55],agt:[160,650,67],adc:[279,650,68],receiver:[84,678,23,116,23]}},
     dl_ba: {pages:[2,3],firstFree:22,left:25,right:452,textX:52,textW:391,
       centers:[142,160,179,196,214,241,254,277,302,322,341,360,379,397,418,437,455,472,495,508,522,547,562,577],
       rows:[[133,150],[151,170],[171,187],[188,203],[204,223],[230,245],[246,260],[263,290],[292,312],[314,332],[334,348],[351,369],[371,387],[389,403],[410,429],[431,446],[449,464],[466,478],[484,499],[501,515],[517,536],[539,551],[554,567],[569,579]],
@@ -94,7 +101,32 @@
         else put(v.dat,[380,90,87],'Data',8);
       }
     }
-    if(cfg.kind==='libero'){
+    if(cfg.kind==='fn_libero'){
+      var fnRecipient=clean(v.dest||'');
+      if(v.trn&&!fnRecipient.includes(clean(v.trn)))fnRecipient+=(fnRecipient?' - ':'')+'treno '+clean(v.trn);
+      // Il numero 01 è già stampato sul modello: viene sostituito dal numero corrente.
+      erase(440,24,68,18);put('N° '+r.prog+'/'+(r.sal||v.sal||''),[443,38,63],'Numero modulo',8);
+      erase(13,75,80,12);put(v.sta,[14,85,77],'Località',7.5);
+      erase(94,75,105,12);put(v.dat,[95,85,103],'Data',7.5);
+      erase(276,57,62,12);put(clean(v.agn)+'/'+clean(v.ags),[278,67,58],'Numero trasmittente',7.5);
+      erase(346,75,53,12);put(v.ora,[347,85,50],'Ora trasmissione',7.5);
+      var fnOrder=r.scelta&&r.scelta.oa||'Si ordina';
+      if(fnOrder==='Si ordina')line(58,106,104);else line(14,50,104);
+      erase(135,97,370,12);put(fnRecipient,[136,107,366],'Destinatario',8.5);
+      erase(14,113,491,146);
+      var fnLines=wrap(v.testo||'',font,9,483),fnLimit=14;
+      if(fnLines.length>fnLimit){
+        var fnRest=fnLines.splice(fnLimit-1);
+        fnLines.push('Segue nel foglio allegato '+add('Testo del dispaccio - continuazione',fnRest.join('\n')));
+      }
+      fnLines.forEach(function(s,i){text(s,15,124+i*9.5,9,font);});
+      if(v.ord){erase(27,300,96,11);put(v.ord,[28,310,93],'Agente che dà l’ordine',7.5);}
+      if(v.agt){erase(150,300,96,11);put(v.agt,[151,310,93],'Agente trasmittente',7.5);}
+      // Nei vecchi record il campo adc era precompilato dal profilo senza conferma del ruolo.
+      if(v.adc&&/^v3\b/.test(r.versioneModello||'')){erase(274,300,96,11);put(v.adc,[275,310,91],'Agente ricevente',7.5);}
+      if(v.ricevProg){erase(84,326,24,11);put(v.ricevProg,[85,335,22],'Progressivo ricevente',7.5);}
+      if(v.ricevSal){erase(115,326,24,11);put(v.ricevSal,[116,335,22],'Saltuario ricevente',7.5);}
+    }else if(cfg.kind==='libero'){
       var normal=r.moduloId==='m40_normale',oa=r.scelta&&r.scelta.oa||(/SI D[AÀ] AVVISO/i.test(r.riepilogo||'')?'Si dà avviso':'Si ordina');
       // Copertura dei numeri già impressi sulle scansioni, entro il solo riquadro numerico.
       if(normal){erase(382,58,63,16);put(r.prog+'/'+(r.sal||v.sal||''),[383,71,60],'Progressivo / saltuario',10);put(v.sta,[276,99,79],'Stazione',8);}
@@ -120,6 +152,12 @@
       if(r.libera) add('Prescrizione libera',r.libera);
     } else {
       var h=cfg.header;
+      if(cfg.kind==='fn_presc'){
+        erase(440,24,54,16);
+        erase(278,46,103,12);erase(269,61,59,12);erase(337,75,49,12);
+        erase(180,93,53,11);erase(302,93,177,11);erase(24,111,111,11);erase(312,111,180,11);
+        erase(85,667,53,11);
+      }
       Object.keys(h).forEach(function(key){
         if(key==='agent'||key==='receiver'){
           var pos=h[key],first=key==='agent'?v.agn:r.prog,last=key==='agent'?v.ags:(r.sal||v.sal||'');
@@ -128,6 +166,7 @@
         }
         var value=key==='number'||key==='receiver'?r.prog+'/'+(r.sal||v.sal||''):
           key==='agent'?clean(v.agn)+'/'+clean(v.ags):key==='prn'?((r.presc||[]).length?(r.presc||[]).filter(function(p){return p.numerata;}).map(function(p){return +p.n;}).sort(function(a,b){return a-b;}).join(', '):(v.prn||'')):v[key];
+        if(key==='number'&&cfg.kind==='fn_presc')value='N° '+value;
         if(key==='number'&&r.moduloId==='dl_bm_bca')erase(379,54,32,11);
         put(value,h[key],{agent:'Numero agente trasmittente',receiver:'Progressivo / saltuario ricevente',agt:'Agente trasmittente',prn:'Prescrizioni selezionate'}[key]||key,key==='number'?9:7.5);
       });
@@ -136,8 +175,11 @@
         var slots=cfg.slots[p.n]||[],hasRaw=r.pv&&slots.every(function(_,i){return r.pv[p.n+'_'+i]!=null;});
         if(p.n>=cfg.firstFree){block(p.testo,cfg.textX,box[0],cfg.textW,box[1]-box[0],'Riga libera '+p.n,8);return;}
         if(hasRaw){
-          slots.forEach(function(pos,i){put(r.pv[p.n+'_'+i],pos,'Prescrizione '+p.n+' - campo '+(i+1),r.moduloId==='dl_bm_bca'?6.75:7.5);});
           var choices=cfg.choices[p.n],choice=r.scelta&&r.scelta[p.n];
+          slots.forEach(function(pos,i){
+            if(cfg.kind==='fn_presc'&&p.n===2&&choice&&(choice==='binario'?i===1:i===0))return;
+            put(r.pv[p.n+'_'+i],pos,'Prescrizione '+p.n+' - campo '+(i+1),r.moduloId==='dl_bm_bca'?6.75:7.5);
+          });
           if(choices&&choice&&choices[choice])Object.keys(choices).forEach(function(value){if(value!==choice){var c=choices[value];line(c[0],c[1],c[2]);}});
           else if(choices){block(p.testo,cfg.textX,box[0],cfg.textW,box[1]-box[0],'Prescrizione '+p.n,7.5);}
         }else{
@@ -153,7 +195,8 @@
       }
     }
     if(overflow.length){
-      text('Segue allegato: riferimenti A1'+(overflow.length>1?' - A'+overflow.length:''),20,page.getHeight()-3,6,font);
+      text('Segue allegato: riferimenti A1'+(overflow.length>1?' - A'+overflow.length:''),
+        cfg.kind==='fn_presc'?15:20,cfg.kind==='fn_presc'?86:page.getHeight()-3,6,font);
       var extra,y;
       function next(){extra=out.addPage([595,842]);text('SEGUITO - '+(r.nome||r.moduloId),40,35,11,bold,extra);text('Modulo N. '+r.prog+'/'+r.sal,40,51,10,font,extra);y=78;}
       next();overflow.forEach(function(item){
@@ -169,5 +212,5 @@
     var pages=await out.copyPages(src,cfg.pages.slice(1));pages.forEach(function(p){out.addPage(p);});
     return out.save();
   }
-  var api={build:build,buildBack:buildBack,supports:function(id){return !!MODELLI[id];},hasBack:function(id){return !!(MODELLI[id]&&MODELLI[id].pages.length>1);},hasGuardColumn:function(id){return !!(MODELLI[id]&&MODELLI[id].right!=null);}};root.M40Pdf=api;if(typeof module!=='undefined')module.exports=api;
+  var api={build:build,buildBack:buildBack,supports:function(id){return !!MODELLI[id];},source:function(id){return MODELLI[id]&&MODELLI[id].source||'assets/moduli-originali.pdf';},hasBack:function(id){return !!(MODELLI[id]&&MODELLI[id].pages.length>1);},hasGuardColumn:function(id){return !!(MODELLI[id]&&MODELLI[id].right!=null);}};root.M40Pdf=api;if(typeof module!=='undefined')module.exports=api;
 })(typeof window!=='undefined'?window:globalThis);
