@@ -140,6 +140,12 @@ footer {
   align-items: flex-end;
   gap: 8px;
 }
+.top-actions { display: flex; align-items: center; gap: 8px; }
+.menu-azioni { position: relative; }
+.menu-azioni summary { display: grid; place-items: center; width: 44px; height: 44px; border: 1px solid var(--soft); border-radius: 12px; background: var(--card); color: var(--tx); font-size: 26px; line-height: 1; cursor: pointer; list-style: none; }
+.menu-azioni summary::-webkit-details-marker { display: none; }
+.menu-voci { position: absolute; z-index: 30; right: 0; top: 48px; min-width: 180px; padding: 6px; border: 1px solid var(--soft); border-radius: 12px; background: var(--card); box-shadow: var(--shadow); }
+.menu-voci button { width: 100%; text-align: left; border: 0; background: transparent; color: var(--tx); }
 
 .num {
   font-size: 17px;
@@ -486,6 +492,9 @@ button:disabled {
 .s2 {
   grid-column: span 2;
 }
+.passo-dataora { display: grid; grid-template-columns: 42px minmax(0, 1fr) 42px; align-items: stretch; gap: 6px; }
+.passo-dataora input { text-align: center; font-variant-numeric: tabular-nums; }
+.passo-dataora button { min-height: 50px; padding: 0; border-radius: 10px; font-size: 27px; font-weight: 400; line-height: 1; }
 
 label {
   display: block;
@@ -816,8 +825,37 @@ pre {
 }
 
 #out {
-  max-height: 360px;
-  overflow-y: auto;
+  max-height: none;
+  overflow: visible;
+}
+
+.riepilogo-lettura { --lettura-size: 18px; margin: 20px 0; color: var(--tx); }
+.lettura-intro { padding: 20px; background: var(--acc-bg); border-radius: 14px; border: 1px solid var(--acc); }
+.lettura-intro h2 { font-size: 22px; line-height: 1.35; margin: 8px 0; }
+.lettura-intro p { font-size: 24px; font-variant-numeric: tabular-nums; margin: 8px 0 0; }
+.lettura-etichetta { font-size: 13px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; }
+.lettura-strumenti { display: flex; flex-wrap: wrap; gap: 8px; margin: 14px 0; }
+.lettura-strumenti button, .lettura-nav button { min-height: 46px; white-space: normal; font-size: 15px; }
+.lettura-strumenti [aria-pressed="true"] { outline: 3px solid var(--acc); outline-offset: 2px; }
+.lettura-blocco { margin: 16px 0; padding: 20px; background: var(--card); border: 1px solid var(--soft); border-left: 5px solid var(--acc); border-radius: 12px; overflow-wrap: anywhere; scroll-margin-top: 70px; }
+.lettura-blocco:focus { outline: 2px solid var(--acc); outline-offset: 3px; }
+.lettura-blocco h3 { font-size: 15px; text-transform: uppercase; letter-spacing: .03em; color: var(--acc); margin: 0 0 16px; line-height: 1.5; }
+.lettura-dati { margin: 0; display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 20px 18px; }
+.lettura-dati dt { font-size: 14px; line-height: 1.4; color: var(--mut); margin-bottom: 7px; }
+.lettura-dati dd { margin: 0; font-size: var(--lettura-size); line-height: 1.6; font-variant-numeric: tabular-nums; }
+.lettura-testo, .lettura-frase { font-size: var(--lettura-size); line-height: 1.8; white-space: pre-wrap; margin: 0; }
+.lettura-testo { margin-top: 12px; }
+.valore-letto { font-weight: 750; background: var(--hi); color: var(--tx); padding: .08em .18em; border-radius: 4px; box-decoration-break: clone; -webkit-box-decoration-break: clone; }
+.dato-mancante { background: var(--err-bg); color: var(--err); padding: .12em .2em; border-radius: 4px; }
+.lettura-aiuto { color: var(--mut); font-size: 14px; line-height: 1.6; margin: 14px 0 0; }
+.lettura-nav { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 12px 0; }
+.lettura-nav span { font-size: 14px; white-space: nowrap; font-variant-numeric: tabular-nums; }
+.lettura-grande { --lettura-size: 23px; }
+@media (max-width: 440px) {
+  .lettura-blocco, .lettura-intro { padding: 16px 12px; }
+  .lettura-dati { grid-template-columns: 1fr; gap: 16px; }
+  .lettura-strumenti button { flex: 1 1 45%; }
+  .lettura-nav button { padding: 10px 12px; }
 }
 
 .note-mod {
@@ -844,6 +882,9 @@ pre {
   flex: 1;
   border-radius: 99px;
 }
+.compilatore-ag { display: flex; align-items: flex-start; gap: 10px; margin-top: 12px; padding: 10px; border: 1px solid var(--soft); border-radius: 10px; font-size: 13px; font-weight: 700; line-height: 1.35; cursor: pointer; }
+.compilatore-ag input { flex: none; width: 20px; height: 20px; margin: 0; accent-color: var(--acc); }
+.compilatore-ag small { display: block; margin-top: 2px; color: var(--mut); font-size: 12px; font-weight: 400; }
 
 /* Archivio */
 .cerca {

@@ -26,7 +26,7 @@ var MODULI = [
   id: "dl_ba",
   rete: "RFI",
   nome: "Mod. M.40 D.L. (B.A.)",
-  versione: "v1 · 10/10/2026",
+  versione: "v2 · 20/10/2026",
   campi: [
     {id: "loc", label: "Località di servizio", span: 2},
     {id: "trn", label: "Treno N°"},
@@ -36,7 +36,7 @@ var MODULI = [
     {id: "agt", label: "Ag. trasmittente (profilo e cognome)", span: 2},
     {tipo: "ag", label: "N° agente trasmittente DM/DCO (progressivo / saltuario comunicato dal regolatore)"}
   ],
-  ordine: "Si ordina all'AdC del treno N° {trn} di rispettare le sottoindicate prescrizioni la cui casella è barrata (o da barrare in caso di trasmissione) e di ritenere nulle le rimanenti prescrizioni.",
+  ordine: "Si ordina all'AdC del treno N° {trn} di rispettare le sottoindicate prescrizioni n° {prn} la cui casella è barrata (o da barrare in caso di trasmissione) e di ritenere nulle le rimanenti prescrizioni.",
   presc: [
     {g: "ITINERARIO", n: 1, t: "Partite da {} con segnale {} (2) disposto a via impedita.(*)"},
     {n: 2, t: "Superate il segnale di {} (3) di {} disposto a via impedita. (*)"},
@@ -68,7 +68,7 @@ var MODULI = [
   id: "dl_bm_bca",
   rete: "RFI",
   nome: "Mod. M.40 D.L. (B.m./B.ca.)",
-  versione: "v1 · 10/10/2026",
+  versione: "v2 · 20/10/2026",
   campi: [
     {id: "loc", label: "Località di servizio", span: 2},
     {id: "trn", label: "Treno N°"},
@@ -78,7 +78,7 @@ var MODULI = [
     {id: "agt", label: "Ag. trasmittente (profilo e cognome)", span: 2},
     {tipo: "ag", label: "N° agente trasmittente DM/DCO (progressivo / saltuario comunicato dal regolatore)"}
   ],
-  ordine: "Si ordina all'AdC del treno N° {trn} di rispettare le sottoindicate prescrizioni la cui casella è barrata (o da barrare in caso di trasmissione) e di ritenere nulle le rimanenti prescrizioni.",
+  ordine: "Si ordina all'AdC del treno N° {trn} di rispettare le sottoindicate prescrizioni n° {prn} la cui casella è barrata (o da barrare in caso di trasmissione) e di ritenere nulle le rimanenti prescrizioni.",
   presc: [
     {g: "ITINERARIO", n: 1, t: "Partite da {} con segnale {} (2) disposto a via impedita.(*)"},
     {n: 2, t: "Superate il segnale di {} (3) di {} disposto a via impedita. (*)"},
