@@ -336,7 +336,7 @@ footer {
   margin-top: 14px;
 }
 
-/* Selettore rete RFI / FERROVIENORD (Material Segmented Button) */
+/* Selettore RFI / FERROVIENORD / CVR */
 .seg {
   display: flex;
   gap: 6px;
@@ -392,6 +392,15 @@ footer {
   background: var(--acc-tx);
   color: var(--acc);
 }
+@media (max-width: 520px) {
+  .seg button { font-size: 12px; letter-spacing: 0; padding: 6px 4px; }
+  .seg .n { display: none; }
+}
+
+.cvr-voce { margin: 9px 0; }
+.cvr-voce small { color: var(--mut); }
+.cvr-formula { padding: 14px; border-left: 4px solid var(--acc); background: var(--acc-bg); border-radius: 8px; line-height: 1.6; }
+.cvr-anteprima { white-space: pre-wrap; overflow-wrap: anywhere; padding: 16px; background: var(--card); border: 1px solid var(--soft); border-radius: 12px; line-height: 1.65; }
 
 /* Pulsanti (Material 3 Buttons) */
 button {

@@ -1,6 +1,6 @@
 'use strict';
 /* App Moduli M.40 — funziona offline; tutti i dati restano sul telefono (localStorage). */
-var APP_VERSIONE = '1.16.1-stabilita';
+var APP_VERSIONE = '1.17.0-cvr';
 var K_CNT = 'm40.contatori', K_ARC = 'm40.archivio', K_DRAFT = 'm40.bozza', K_EXP = 'm40.ultimaEsportazione', K_TRASH = 'm40.cestino', K_DELID = 'm40.eliminati', K_ADC = 'm40.cognomeAdc', K_PROFILO = 'm40.profilo', K_TEMA = 'm40.tema', K_RETE = 'm40.rete';
 
 var LS = {
@@ -77,6 +77,8 @@ function mostra(st) {
   vistaCorrente = st.v;
   window.scrollTo(0, 0);
   if (st.v === 'form') vistaForm();
+  else if (st.v === 'cvr') vistaCvr();
+  else if (st.v === 'cvr-scheda') vistaCvrScheda(st.a);
   else if (st.v === 'archivio') vistaArchivio();
   else if (st.v === 'record') vistaRecord(st.a);
   else if (st.v === 'cestino') vistaCestino();
@@ -111,13 +113,17 @@ function vistaHome() {
   }
   var reti = [];
   MODULI.forEach(function (m) { var r = m.rete || 'RFI'; if (reti.indexOf(r) < 0) reti.push(r); });
+  reti.push('CVR');
   var sel = LS.get(K_RETE, reti[0]);
   if (reti.indexOf(sel) < 0) sel = reti[0];
   h += '<div class="seg" role="tablist">' + reti.map(function (r) {
-    var n = MODULI.filter(function (m) { return (m.rete || 'RFI') === r; }).length;
+    var n = r === 'CVR' ? CVR_PROCEDURE.length : MODULI.filter(function (m) { return (m.rete || 'RFI') === r; }).length;
     return '<button role="tab" aria-selected="' + (r === sel) + '" class="' + (r === sel ? 'on' : '') + '" data-rete="' + esc(r) + '">' + esc(r) + ' <span class="n">' + n + '</span></button>';
   }).join('') + '</div>';
-  [sel].forEach(function (rete) {
+  if (sel === 'CVR') {
+    h += '<h2>Comunicazioni verbali registrate</h2><div class="card"><p>Consulta le 24 procedure per codice, situazione di impiego e formula. Ogni scheda permette di preparare una sola procedura alla volta.</p><p class="nota">L’app non registra la voce, non invia comunicazioni e non sostituisce l’inteso con il RdC.</p><button class="pri full" id="apriCvr">Apri le procedure CVR</button></div>';
+  }
+  if (sel !== 'CVR') [sel].forEach(function (rete) {
   h += '<h2>Compila · ' + esc(rete) + '</h2><div class="lista">';
   MODULI.filter(function (m) { return (m.rete || 'RFI') === rete; }).forEach(function (m) {
     var p = prossimo(m.id);
@@ -139,6 +145,7 @@ function vistaHome() {
   $$('[data-imposta]').forEach(function (b) { b.onclick = function () { var m = mod(b.dataset.imposta); chiediProgressivo(m, prossimo(m.id)).then(vistaHome); }; });
   $$('[data-compila]').forEach(function (b) { b.onclick = function () { nuovaCompilazione(mod(b.dataset.compila)); }; });
   $('#apriArc').onclick = function () { vai('archivio'); };
+  if ($('#apriCvr')) $('#apriCvr').onclick = function () { vai('cvr'); };
   $('#apriImp').onclick = function () { vai('impostazioni'); };
   $$('[data-rete]').forEach(function (b) { b.onclick = function () { LS.set(K_RETE, b.dataset.rete); var y = window.scrollY; vistaHome(); window.scrollTo(0, y); }; });
 }
@@ -903,6 +910,79 @@ function vistaConsultaRecord(id) {
   if ($('#pdf')) $('#pdf').onclick = function () { scaricaPdf(r, false); };
   if ($('#vediRetro')) $('#vediRetro').onclick = function () { consultaRetro(r.moduloId); };
   if ($('#sh')) $('#sh').onclick = function () { navigator.share({title: r.nome + ' N. ' + r.prog + '/' + r.sal, text: r.riepilogo}).catch(function () {}); };
+}
+
+/* ---------- catalogo CVR: consultazione e preparazione, senza registrazione vocale ---------- */
+var cvrFiltro = '', cvrBozza = {codice: null, sede: '', cognome: '', treno: '', data: dataCorrente(), fermata: '', variabili: {}};
+function cvrProcedura(codice) { return CVR_PROCEDURE.filter(function (p) { return p.codice === codice; })[0] || null; }
+function cvrCampi(formula) {
+  var trovato = formula.match(/\[[^\]]+\]/g) || [];
+  return trovato.filter(function (campo, indice) { return trovato.indexOf(campo) === indice; });
+}
+function cvrFormula(p, valori) {
+  var formula = p.formula;
+  if (!String(valori['[LOCALITÀ, SE PREVISTA]'] || '').trim()) formula = formula.replace(' di [LOCALITÀ, SE PREVISTA]', '');
+  return formula.replace(/\[([^\]]+)\]/g, function (tutto) {
+    return String(valori[tutto] || '').trim() || tutto;
+  });
+}
+function vistaCvr() {
+  var h = '<header class="top"><div><button class="link" id="indietro">‹ Moduli</button><h1>Procedure CVR</h1><div class="sub">24 procedure · 7 gruppi · Allegato 3 IPCL Captrain</div></div>' + temaBtn() + '</header>';
+  h += '<div class="avviso"><b>Consultazione per la preparazione.</b> La registrazione avviene tramite SCR RFI, non tramite questa app. Ogni comunicazione richiede le condizioni previste, una sola procedura alla volta e la ripetizione integrale da parte del ricevente. Le CVR sono escluse per treni in ETCS; in caso di guasto SCR si usano le forme tradizionali.</div>';
+  h += '<label for="cvrCerca">Cerca codice, situazione o gruppo</label><input id="cvrCerca" type="search" placeholder="Es. SCMT 02, supero rosso" value="' + esc(cvrFiltro) + '"><div id="cvrElenco"></div>';
+  h += '<footer>Schede di studio basate sul manuale fornito. Verifica sempre IPCL e disposizioni vigenti prima dell’impiego.</footer>';
+  app.innerHTML = h;
+  $('#indietro').onclick = function () { vai('home'); };
+  function elenco() {
+    var q = cvrFiltro.toLocaleLowerCase('it-IT').trim();
+    var lista = CVR_PROCEDURE.filter(function (p) { return (p.codice + ' ' + p.gruppo + ' ' + p.quando + ' ' + p.formula).toLocaleLowerCase('it-IT').indexOf(q) >= 0; });
+    var gruppo = '';
+    $('#cvrElenco').innerHTML = lista.map(function (p) {
+      var titolo = p.gruppo !== gruppo ? '<h2>' + esc(gruppo = p.gruppo) + '</h2>' : '';
+      return titolo + '<button class="voce cvr-voce" data-cvr="' + esc(p.codice) + '"><b>' + esc(p.codice) + '</b><span>' + esc(p.quando) + '</span><small>' + esc(p.riferimento) + '</small></button>';
+    }).join('') || '<p class="nota">Nessuna procedura trovata.</p>';
+    $$('#cvrElenco [data-cvr]').forEach(function (b) { b.onclick = function () { vai('cvr-scheda', b.dataset.cvr); }; });
+  }
+  $('#cvrCerca').oninput = function () { cvrFiltro = this.value; elenco(); };
+  elenco();
+}
+function cvrCompleta(p, bozza) {
+  return ['sede', 'cognome', 'treno', 'data', 'fermata'].every(function (k) { return !!String(bozza[k] || '').trim(); }) &&
+    cvrCampi(p.formula).every(function (k) { return k === '[LOCALITÀ, SE PREVISTA]' || !!String(bozza.variabili[k] || '').trim(); });
+}
+function vistaCvrScheda(codice) {
+  var p = cvrProcedura(codice);
+  if (!p) { vai('cvr', null, true); return; }
+  if (cvrBozza.codice !== codice) cvrBozza = {codice: codice, sede: cvrBozza.sede, cognome: cvrBozza.cognome, treno: cvrBozza.treno, data: cvrBozza.data, fermata: cvrBozza.fermata, variabili: {}};
+  var h = '<header class="top"><div><button class="link" id="indietro">‹ Procedure CVR</button><h1>' + esc(p.codice) + '</h1><div class="sub">' + esc(p.gruppo) + ' · ' + esc(p.riferimento) + '</div></div>' + temaBtn() + '</header>';
+  h += '<div class="avviso"><b>Non è una comunicazione registrata.</b> Questa scheda prepara la lettura; non verifica l’applicabilità, non autorizza il movimento e non conferma l’inteso.</div>';
+  h += '<section class="sez"><h2>Quando si applica</h2><p>' + esc(p.quando) + '</p><h2>Comportamento AdC</h2><p>' + esc(p.comportamento) + '</p><h2>Attenzioni e limiti</h2><p>' + esc(p.limiti) + '</p></section>';
+  h += '<section class="sez"><h2>Intestazione · una procedura per volta</h2><div class="griglia">';
+  [['sede','Sede RdC'],['cognome','Cognome RdC'],['treno','Numero treno'],['data','Data di effettuazione treno'],['fermata','Punto di fermata']].forEach(function (a) {
+    h += '<div><label for="cvr-' + a[0] + '">' + a[1] + '</label><input id="cvr-' + a[0] + '" data-cvr-header="' + a[0] + '" autocomplete="off" value="' + esc(cvrBozza[a[0]]) + '"></div>';
+  });
+  h += '</div><h2>Formula e dati variabili</h2><p class="cvr-formula">' + esc(p.formula) + '</p>';
+  var campi = cvrCampi(p.formula);
+  if (campi.length) h += '<div class="griglia">' + campi.map(function (campo, i) {
+    var scelta = campo === '[SINISTRA/DESTRA]' ? ['SINISTRA','DESTRA'] : campo === '[FISSA/LAMPEGGIANTE]' ? ['FISSA','LAMPEGGIANTE'] : campo === '[CORRETTO TRACCIATO/DEVIATA]' ? ['CORRETTO TRACCIATO','DEVIATA A SINISTRA','DEVIATA A DESTRA'] : null;
+    var v = cvrBozza.variabili[campo] || '';
+    return '<div><label for="cvr-var-' + i + '">' + esc(campo.slice(1,-1)) + '</label>' +
+      (scelta ? '<select id="cvr-var-' + i + '" data-cvr-var="' + esc(campo) + '"><option value="">Seleziona</option>' + scelta.map(function (x) { return '<option value="' + x + '"' + (x === v ? ' selected' : '') + '>' + x + '</option>'; }).join('') + '</select>' : '<input id="cvr-var-' + i + '" data-cvr-var="' + esc(campo) + '" autocomplete="off" value="' + esc(v) + '">') + '</div>';
+  }).join('') + '</div>';
+  if (p.dati) h += '<p class="nota">Dati indicati nella scheda: ' + esc(p.dati) + '.</p>';
+  h += '</section><section class="sez"><h2>Testo di preparazione</h2><p id="cvrStato" class="nota"></p><div id="cvrAnteprima" class="rec cvr-anteprima" aria-live="polite"></div><p class="nota">Il ricevente deve ripetere l’intera intestazione e la formula con tutti i dati ricevuti. Se la comunicazione si interrompe, la procedura va ripetuta integralmente dopo il ripristino.</p></section>';
+  h += '<footer>Testo di supporto ricavato dal manuale CVR fornito. Le pagine normative originali e la revisione vigente prevalgono sulla scheda.</footer>';
+  app.innerHTML = h;
+  $('#indietro').onclick = function () { vai('cvr'); };
+  function aggiorna() {
+    var pronta = cvrCompleta(p, cvrBozza);
+    $('#cvrStato').textContent = pronta ? 'Campi compilati: confronta il testo con la procedura vigente prima dell’uso.' : 'Completa tutti i campi per leggere il testo senza segnaposto.';
+    var righe = ['RdC: ' + (cvrBozza.sede || '[SEDE]') + ' · ' + (cvrBozza.cognome || '[COGNOME]'), 'Treno n. ' + (cvrBozza.treno || '[NUMERO]') + ' del ' + (cvrBozza.data || '[DATA]'), 'Punto di fermata: ' + (cvrBozza.fermata || '[PUNTO DI FERMATA]'), 'Procedura: ' + p.codice, '', cvrFormula(p, cvrBozza.variabili)];
+    $('#cvrAnteprima').textContent = righe.join('\n');
+  }
+  $$('[data-cvr-header]').forEach(function (x) { x.oninput = function () { cvrBozza[x.dataset.cvrHeader] = x.value; aggiorna(); }; });
+  $$('[data-cvr-var]').forEach(function (x) { x.oninput = function () { cvrBozza.variabili[x.dataset.cvrVar] = x.value; aggiorna(); }; });
+  aggiorna();
 }
 
 /* ---------- avvio ---------- */

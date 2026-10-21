@@ -1,0 +1,267 @@
+/* Schede di consultazione tratte dal manuale CVR fornito dall’utente. Non sono moduli ufficiali. */
+var CVR_PROCEDURE = [
+  {
+    "codice": "SR 01",
+    "gruppo": "Richiesta Supero Rosso",
+    "pagina": 5,
+    "riferimento": "IPCL Captrain, Allegato 3, p. 160",
+    "formula": "Richiesta operazione Supero Rosso per superamento segnale [FUNZIONE] di [LOCALITÀ] a via impedita con segnale di avvio attivo a luce fissa.",
+    "quando": "Partenza con segnale a via impedita e segnale di avvio attivo a luce fissa.",
+    "comportamento": "L’AdC richiede il Supero Rosso. Il DCO/DM, dopo le proprie valutazioni, concede il nulla osta; l’AdC riprende attenendosi alle indicazioni del segnalamento e alle norme applicabili.",
+    "limiti": "Il nulla osta concerne soltanto la regolazione della circolazione rilevabile dal DCO/DM; non modifica le responsabilità dell’AdC.",
+    "dati": "FUNZIONE SEGNALE; LOCALITÀ DI SERVIZIO"
+  },
+  {
+    "codice": "SR 02",
+    "gruppo": "Richiesta Supero Rosso",
+    "pagina": 6,
+    "riferimento": "IPCL Captrain, Allegato 3, p. 161",
+    "formula": "Richiesta operazione Supero Rosso per superamento segnale [FUNZIONE] di [LOCALITÀ] a via impedita con segnale di avanzamento attivo a luce fissa.",
+    "quando": "Necessità di Supero Rosso con segnale a via impedita e segnale di avanzamento attivo a luce fissa.",
+    "comportamento": "L’AdC richiede il Supero Rosso. Il DCO/DM, dopo le proprie valutazioni, concede il nulla osta; l’AdC riprende attenendosi alle indicazioni del segnalamento e alle norme applicabili.",
+    "limiti": "Il nulla osta concerne soltanto la regolazione della circolazione rilevabile dal DCO/DM; non modifica le responsabilità dell’AdC.",
+    "dati": "FUNZIONE SEGNALE; LOCALITÀ DI SERVIZIO"
+  },
+  {
+    "codice": "SR 03",
+    "gruppo": "Richiesta Supero Rosso",
+    "pagina": 7,
+    "riferimento": "IPCL Captrain, Allegato 3, p. 161",
+    "formula": "Richiesta operazione Supero Rosso per superamento segnale [FUNZIONE] di [LOCALITÀ] a via impedita con lettera luminosa D accesa a luce [FISSA/LAMPEGGIANTE].",
+    "quando": "Segnale di protezione a via impedita con lettera D luminosa accesa fissa o lampeggiante.",
+    "comportamento": "L’AdC richiede il Supero Rosso. Il DCO/DM, dopo le proprie valutazioni, concede il nulla osta; l’AdC riprende attenendosi alle indicazioni del segnalamento e alle norme applicabili.",
+    "limiti": "Il nulla osta concerne soltanto la regolazione della circolazione rilevabile dal DCO/DM; non modifica le responsabilità dell’AdC.",
+    "dati": "FUNZIONE; LOCALITÀ; LUCE FISSA/LAMPEGGIANTE"
+  },
+  {
+    "codice": "SR 04",
+    "gruppo": "Richiesta Supero Rosso",
+    "pagina": 8,
+    "riferimento": "IPCL Captrain, Allegato 3, p. 162",
+    "formula": "Richiesta operazione Supero Rosso per superamento segnale [FUNZIONE] di [LOCALITÀ] a via impedita con lettera luminosa A accesa a luce [FISSA/LAMPEGGIANTE].",
+    "quando": "Segnale di partenza a via impedita con lettera A luminosa accesa fissa o lampeggiante.",
+    "comportamento": "L’AdC richiede il Supero Rosso. Il DCO/DM, dopo le proprie valutazioni, concede il nulla osta; l’AdC riprende attenendosi alle indicazioni del segnalamento e alle norme applicabili.",
+    "limiti": "Il nulla osta concerne soltanto la regolazione della circolazione rilevabile dal DCO/DM; non modifica le responsabilità dell’AdC.",
+    "dati": "FUNZIONE; LOCALITÀ; LUCE FISSA/LAMPEGGIANTE"
+  },
+  {
+    "codice": "SR 05",
+    "gruppo": "Richiesta Supero Rosso",
+    "pagina": 9,
+    "riferimento": "IPCL Captrain, Allegato 3, p. 162",
+    "formula": "Richiesta operazione Supero Rosso per superamento segnale di blocco n. [NUMERO] a via impedita con lettera luminosa A accesa a luce [FISSA/LAMPEGGIANTE].",
+    "quando": "Segnale di blocco a via impedita con lettera A luminosa accesa fissa o lampeggiante.",
+    "comportamento": "L’AdC richiede il Supero Rosso. Il DCO/DM, dopo le proprie valutazioni, concede il nulla osta; l’AdC riprende attenendosi alle indicazioni del segnalamento e alle norme applicabili.",
+    "limiti": "Il nulla osta concerne soltanto la regolazione della circolazione rilevabile dal DCO/DM; non modifica le responsabilità dell’AdC.",
+    "dati": "NUMERO SEGNALE DI BLOCCO; LUCE FISSA/LAMPEGGIANTE"
+  },
+  {
+    "codice": "SR 06",
+    "gruppo": "Richiesta Supero Rosso",
+    "pagina": 10,
+    "riferimento": "IPCL Captrain, Allegato 3, p. 163",
+    "formula": "Richiesta operazione Supero Rosso per superamento segnale km [KM] di protezione propria di n. [NUMERO] PL disposto a via impedita.",
+    "quando": "Segnale di protezione propria di passaggio a livello a via impedita (richiamo all’art. 53.1b RS).",
+    "comportamento": "L’AdC richiede il Supero Rosso. Il DCO/DM, dopo le proprie valutazioni, concede il nulla osta; l’AdC riprende attenendosi alle indicazioni del segnalamento e alle norme applicabili.",
+    "limiti": "Il nulla osta concerne soltanto la regolazione della circolazione rilevabile dal DCO/DM; non modifica le responsabilità dell’AdC.",
+    "dati": "PROGRESSIVA CHILOMETRICA; NUMERO DI PL PROTETTI"
+  },
+  {
+    "codice": "SR 07",
+    "gruppo": "Richiesta Supero Rosso",
+    "pagina": 11,
+    "riferimento": "IPCL Captrain, Allegato 3, p. 163",
+    "formula": "Richiesta operazione Supero Rosso per superamento segnale [FUNZIONE] di [LOCALITÀ] disposto a via libera con aspetto rosso/giallo/giallo.",
+    "quando": "Segnale di località di servizio in zona codificata BA, con aspetto rosso/giallo/giallo nelle condizioni descritte dall’IPCL.",
+    "comportamento": "L’AdC richiede il Supero Rosso. Il DCO/DM, dopo le proprie valutazioni, concede il nulla osta; l’AdC riprende attenendosi alle indicazioni del segnalamento e alle norme applicabili.",
+    "limiti": "Il nulla osta concerne soltanto la regolazione della circolazione rilevabile dal DCO/DM; non modifica le responsabilità dell’AdC.",
+    "dati": "FUNZIONE SEGNALE; LOCALITÀ DI SERVIZIO"
+  },
+  {
+    "codice": "SR 08",
+    "gruppo": "Richiesta Supero Rosso",
+    "pagina": 12,
+    "riferimento": "IPCL Captrain, Allegato 3, p. 164",
+    "formula": "Richiesta operazione Supero Rosso per superamento segnale [FUNZIONE] di [LOCALITÀ, SE PREVISTA] disposto a via libera.",
+    "quando": "Segnale a via libera con disallineamento tra indicazione del segnale e codice di bordo.",
+    "comportamento": "L’AdC richiede il Supero Rosso. Il DCO/DM, dopo le proprie valutazioni, concede il nulla osta; l’AdC riprende attenendosi alle indicazioni del segnalamento e alle norme applicabili.",
+    "limiti": "Il nulla osta concerne soltanto la regolazione della circolazione rilevabile dal DCO/DM; non modifica le responsabilità dell’AdC.",
+    "dati": "FUNZIONE SEGNALE; LOCALITÀ SE PERTINENTE"
+  },
+  {
+    "codice": "SSB 01",
+    "gruppo": "Esclusione sistema di bordo",
+    "pagina": 13,
+    "riferimento": "IPCL Captrain, Allegato 3, p. 165",
+    "formula": "[SSB/FUNZIONE] escluso per guasto da [LOCALITÀ O KM INIZIALE] a [LOCALITÀ FINALE].",
+    "quando": "Necessità di proseguire con SSB, o sue funzioni, escluso per guasto/anormalità a bordo.",
+    "comportamento": "L’AdC comunica l’esclusione. Il DCO/DM, valutati gli elementi disponibili e verificato per quanto possibile che l’arresto non derivi da indebito superamento di segnale a via impedita, dà conferma. Dopo l’inteso l’AdC riprende nel rispetto della modalità operativa in atto.",
+    "limiti": "La CVR non sostituisce gli altri obblighi conseguenti al guasto del sistema di bordo.",
+    "dati": "SSB ESCLUSO; ORIGINE; LOCALITÀ FINALE"
+  },
+  {
+    "codice": "PBA 01",
+    "gruppo": "Segnali permissivi BA",
+    "pagina": 14,
+    "riferimento": "IPCL Captrain, Allegato 3, p. 166",
+    "formula": "Proseguimento della marcia con le modalità dell’articolo 48 comma 4 RS.",
+    "quando": "Segnale di blocco a permissività permanente a via impedita, quando al DCO/DM non risulta presenza di treni nella tratta a valle.",
+    "comportamento": "Dopo l’inteso, superamento a via impedita e marcia a vista fino al successivo segnale di 1ª categoria che non preavvisi un segnale a via impedita, max 30 km/h; marcia a vista specifica ai PL protetti dal segnale.",
+    "limiti": "Supero Rosso implicito. Eccezioni ai vincoli di marcia a vista solo se previste dalle istruzioni sulla ripetizione continua dei segnali.",
+    "dati": "IDENTIFICAZIONE SEGNALE PERMISSIVO"
+  },
+  {
+    "codice": "PBA 02",
+    "gruppo": "Segnali permissivi BA",
+    "pagina": 15,
+    "riferimento": "IPCL Captrain, Allegato 3, p. 167",
+    "formula": "Proseguimento della marcia con le modalità dell’articolo 48 commi 4 e 5 RS.",
+    "quando": "Segnale a via impedita con lettera P luminosa, in assenza di treni a valle risultante al DCO/DM.",
+    "comportamento": "Dopo l’inteso, procedere solo se permane P luminosa accesa: marcia a vista max 30 km/h fino al segnale previsto, con cautele ai PL. Se P lampeggia, verifica itinerario corretto tracciato e arresto prima dei deviatoi/gruppi, poi superamento prudente max 30 km/h dopo accertamento.",
+    "limiti": "Supero Rosso implicito. Eccezioni solo secondo le specifiche istruzioni di bordo.",
+    "dati": "IDENTIFICAZIONE SEGNALE; STATO LETTERA P"
+  },
+  {
+    "codice": "PBA 03",
+    "gruppo": "Segnali permissivi BA",
+    "pagina": 16,
+    "riferimento": "IPCL Captrain, Allegato 3, p. 168",
+    "formula": "Proseguimento della marcia con segnale [SEGNALE] disposto a via impedita e lettera P spenta da considerarsi accesa a luce lampeggiante.",
+    "quando": "Raccordo in linea con segnale di protezione (DCO o DM); oppure protezione/partenza di LdS impresenziata (solo DM), con P spenta e assenza di treni a valle risultante al regolatore.",
+    "comportamento": "Dopo l’inteso, marcia a vista max 30 km/h fino al segnale previsto; cautele ai PL e verifica dell’itinerario di corretto tracciato, con arresto prima dei deviatoi e superamento prudente dopo accertamento.",
+    "limiti": "Supero Rosso implicito. LdS da ritenere impresenziata nei casi indicati. Eccezioni ai vincoli solo secondo specifiche istruzioni.",
+    "dati": "FUNZIONE SEGNALE; LOCALITÀ E/O NUMERO PBA"
+  },
+  {
+    "codice": "CTC 01",
+    "gruppo": "Segnali a via impedita",
+    "pagina": 17,
+    "riferimento": "IPCL Captrain, Allegato 3, p. 169",
+    "formula": "Avanzamento in manovra sull’itinerario di arrivo con istradamento sul binario n. [NUMERO].",
+    "quando": "Superamento segnale di protezione LdS a via impedita, quando non sussistono le condizioni richiamate dall’art. 16/1, Allegato 1 bis, RCT.",
+    "comportamento": "Dopo l’inteso dal DCO, avanzamento in manovra sul binario notificato fino al termine itinerario; arresti in relazione ai picchetti speciali, accertamento integrità e disposizione dei deviatoi, inclusi i non centralizzati.",
+    "limiti": "Supero Rosso implicito; rispettare integralmente le disposizioni sui picchetti speciali e deviatoi.",
+    "dati": "NUMERO BINARIO ARRIVO"
+  },
+  {
+    "codice": "CTC 02",
+    "gruppo": "Segnali a via impedita",
+    "pagina": 18,
+    "riferimento": "IPCL Captrain, Allegato 3, p. 170",
+    "formula": "Avanzamento in manovra sull’itinerario di partenza con istradamento verso [LOCALITÀ] sul binario di [SINISTRA/DESTRA] percorrendo linea [LINEA].",
+    "quando": "Segnale di partenza LdS o protezione di bivio/PC a via impedita; condizioni art. 16/1 non sussistenti e via libera di blocco elettrico presente.",
+    "comportamento": "Dopo l’inteso al DCO, avanzamento in manovra fino al termine itinerario con cautele ai picchetti e verifica deviatoi; poi rispetto delle indicazioni del primo segnale successivo.",
+    "limiti": "Supero Rosso implicito; linea soltanto se immissione su linee affiancate, senso binario per linee banalizzate.",
+    "dati": "LOCALITÀ SUCCESSIVA; BINARIO; LINEA"
+  },
+  {
+    "codice": "CTC 03",
+    "gruppo": "Segnali a via impedita",
+    "pagina": 19,
+    "riferimento": "IPCL Captrain, Allegato 3, p. 170",
+    "formula": "Marcia a vista fino al successivo segnale.",
+    "quando": "Protezione o partenza interna a via impedita, con condizioni/accertamenti previsti dall’art. 16/1, Allegato 1 bis, RCT.",
+    "comportamento": "Dopo l’inteso al DCO/DM, superare il segnale e proseguire in marcia a vista max 30 km/h fino al successivo segnale di protezione/partenza, di cui rispettare le indicazioni.",
+    "limiti": "Supero Rosso implicito.",
+    "dati": "IDENTIFICAZIONE SEGNALE E LOCALITÀ"
+  },
+  {
+    "codice": "CTC 04",
+    "gruppo": "Segnali a via impedita",
+    "pagina": 20,
+    "riferimento": "IPCL Captrain, Allegato 3, p. 171",
+    "formula": "Marcia a vista sull’itinerario di partenza con inoltro sul binario [SINISTRA/DESTRA] percorrendo linea [LINEA].",
+    "quando": "Segnale di partenza LdS o protezione bivio/PC a via impedita; condizioni/accertamenti previsti e via libera di blocco elettrico presente.",
+    "comportamento": "Dopo l’inteso, marcia a vista max 30 km/h fino al termine itinerario di partenza; poi rispetto del primo segnale successivo. Controllare corretto inoltro sulla linea/binario notificati.",
+    "limiti": "Supero Rosso implicito. Dati linea/binario richiesti solo nei casi indicati.",
+    "dati": "BINARIO; LINEA"
+  },
+  {
+    "codice": "BA 01",
+    "gruppo": "Partenza con BA",
+    "pagina": 21,
+    "riferimento": "IPCL Captrain, Allegato 3, p. 172",
+    "formula": "Avanzamento in manovra sull’itinerario di partenza con istradamento verso [LOCALITÀ] sul binario di [SINISTRA/DESTRA] percorrendo linea [LINEA] e marcia a vista fino al successivo segnale.",
+    "quando": "Linee a doppio binario: segnale di partenza o protezione di bivio/PC a via impedita, quando mancano condizioni richiamate art. 16/1 e via libera di blocco nella prima/unica sezione.",
+    "comportamento": "Dopo l’inteso al DCO, avanzamento in manovra e accertamenti su picchetti/deviatoi fino al termine itinerario; poi marcia a vista max 30 km/h, salvo ricezione codice in linea, fino al primo segnale di 1ª categoria.",
+    "limiti": "Supero Rosso implicito; verificare requisiti dell’infrastruttura e le eccezioni espressamente previste.",
+    "dati": "LOCALITÀ; BINARIO; LINEA"
+  },
+  {
+    "codice": "BA 02",
+    "gruppo": "Partenza con BA",
+    "pagina": 22,
+    "riferimento": "IPCL Captrain, Allegato 3, p. 173",
+    "formula": "Marcia a vista fino al successivo segnale con inoltro sul binario [SINISTRA/DESTRA] percorrendo linea [LINEA].",
+    "quando": "Superamento segnale di partenza LdS o protezione di bivio/PC a via impedita; condizioni/accertamenti previsti e mancanza di via libera di blocco sulle sezioni indicate nell’Allegato 3.",
+    "comportamento": "Dopo l’inteso al DCO/DM, marcia a vista max 30 km/h, salvo ricezione codice in linea, fino al primo segnale di 1ª categoria; controllare corretto inoltro per linea/binario.",
+    "limiti": "Supero Rosso implicito; distinguere linee in telecomando e dirigenza locale.",
+    "dati": "BINARIO; LINEA"
+  },
+  {
+    "codice": "SCC 01",
+    "gruppo": "Segnali a via impedita su SCC",
+    "pagina": 23,
+    "riferimento": "IPCL Captrain, Allegato 3, p. 174",
+    "formula": "Treno da istradare sul binario n. [NUMERO].",
+    "quando": "Treno fermo al segnale di protezione prima del comando di attivazione del segnale di avanzamento lampeggiante da parte del DCO.",
+    "comportamento": "Dopo attivazione del segnale, avanzamento in manovra fino al termine itinerario di arrivo; fermata prima dei deviatoi con tabella gialla, verifica luce blu e posizione. Se luce spenta o deviatoio manuale: richiesta di specifica prescrizione al DCO.",
+    "limiti": "Supero Rosso implicito; deviatoi con luce blu fissa oltrepassabili con cautela, max 30 km/h, a condizioni verificate.",
+    "dati": "NUMERO BINARIO"
+  },
+  {
+    "codice": "SCC 02",
+    "gruppo": "Segnali a via impedita su SCC",
+    "pagina": 24,
+    "riferimento": "IPCL Captrain, Allegato 3, p. 175",
+    "formula": "Treno da istradare verso [LOCALITÀ], sul binario di [SINISTRA/DESTRA], percorrendo linea [LINEA].",
+    "quando": "Treno fermo a segnale di partenza, prima dell’attivazione di avanzamento/avvio lampeggiante da parte del DCO.",
+    "comportamento": "Dopo attivazione del segnale, avanzamento in manovra fino al termine itinerario di partenza; fermate prima dei deviatoi con tabella gialla, verifica luce blu e disposizione. Per luce spenta o deviatoio manuale contattare DCO per prescrizione.",
+    "limiti": "Supero Rosso implicito; max 30 km/h nel superamento dei deviatoi alle condizioni previste.",
+    "dati": "LOCALITÀ; BINARIO; LINEA"
+  },
+  {
+    "codice": "SCC 03",
+    "gruppo": "Segnali a via impedita su SCC",
+    "pagina": 25,
+    "riferimento": "IPCL Captrain, Allegato 3, p. 175",
+    "formula": "Deviatoio n. [NUMERO] da impegnare disposto per [CORRETTO TRACCIATO/DEVIATA].",
+    "quando": "Treno fermo in corrispondenza di deviatoio con luce blu spenta o privo di segnale luminoso.",
+    "comportamento": "Ricevuta comunicazione dal DCO, verificare integrità e corretta disposizione; dopo eventuale manovra, oltrepassare con cautela e senza superare i 30 km/h.",
+    "limiti": "Per deviatoio simmetrico: specificare deviata a sinistra o deviata a destra, secondo la prescrizione.",
+    "dati": "NUMERO DEVIATOIO; DISPOSIZIONE"
+  },
+  {
+    "codice": "SCMT 01",
+    "gruppo": "Anormalità SCMT",
+    "pagina": 26,
+    "riferimento": "IPCL Captrain, Allegato 3, p. 176",
+    "formula": "Rispetto delle indicazioni del segnale.",
+    "quando": "Arresto per anormalità SCMT al segnale fisso di protezione/partenza LdS, PBI/PBA o protezione propria PL.",
+    "comportamento": "Dopo l’inteso al DCO/DM, ripresa della corsa nel rispetto dell’indicazione del segnale.",
+    "limiti": "Casi legati a codici 37/39, dizione Perdita PI SCMT o icona TRAIN TRIP; verificare posizione d’arresto e condizioni tassative della procedura.",
+    "dati": "POSIZIONE D’ARRESTO E IDENTIFICAZIONE SEGNALE"
+  },
+  {
+    "codice": "SCMT 02",
+    "gruppo": "Anormalità SCMT",
+    "pagina": 27,
+    "riferimento": "IPCL Captrain, Allegato 3, p. 177",
+    "formula": "Marcia a vista fino al successivo segnale per guasto SCMT.",
+    "quando": "Anormalità SCMT con arresto su itinerario di arrivo/partenza specificato dall’Allegato 3, o in linea non precedendo un PBA; applicabile solo senza altre prescrizioni necessarie e con accertamento relativo a segnali tra cippi.",
+    "comportamento": "Dopo l’inteso, marcia a vista max 30 km/h, salvo ricezione codice in linea, fino al segnale fisso successivo dal quale prendere norma.",
+    "limiti": "Casi legati a codici 37/39, dizione Perdita PI SCMT o icona TRAIN TRIP; verificare posizione d’arresto e condizioni tassative della procedura. Non basta il solo errore di bordo per rendere applicabile la procedura.",
+    "dati": "CIPPI KM; TIPO ITINERARIO; SEGNALI EVENTUALMENTE PRESENTI"
+  },
+  {
+    "codice": "SCMT 03",
+    "gruppo": "Anormalità SCMT",
+    "pagina": 28,
+    "riferimento": "IPCL Captrain, Allegato 3, p. 177",
+    "formula": "Autorizzazione alla ripresa della corsa per guasto SCMT (arresto in linea su linee con B.ca).",
+    "quando": "Linee B.ca: anormalità SCMT e fermata in linea non in precedenza di segnale fisso; non devono occorrere altre prescrizioni; specifiche verifiche su PBI/PL e libertà della tratta a cura DCO/DM.",
+    "comportamento": "Dopo l’inteso al DCO/DM, ripresa della corsa e prosecuzione fino al successivo segnale fisso dal quale prendere norma.",
+    "limiti": "Casi legati a codici 37/39, dizione Perdita PI SCMT o icona TRAIN TRIP; verificare posizione d’arresto e condizioni tassative della procedura. Il DCO/DM deve previamente accertare la libertà della tratta sino alla successiva LdS.",
+    "dati": "CIPPI KM; TRATTA; SEGNALI PRESENTI"
+  }
+];
