@@ -103,3 +103,9 @@ Archivio e progressivi **non vengono toccati** dagli aggiornamenti. I moduli gi�
 La scheda **CVR** nella pagina iniziale apre un catalogo di 24 procedure in 7 gruppi, ricavato dal manuale *Manuale Moduli CVR Captrain 2026* fornito per questo progetto. Si può cercare per codice, gruppo o situazione. Una scheda mostra il riferimento all'Allegato 3 IPCL, le condizioni riassunte dal manuale, il comportamento dell'AdC e le attenzioni. Inserendo sede e cognome del RdC, numero e data del treno, punto di fermata e gli eventuali dati variabili si ottiene un testo di preparazione con i segnaposto ancora visibili finché i campi sono vuoti.
 
 La sezione non registra audio, non trasmette CVR, non certifica il funzionamento dell'SCR e non produce un'autorizzazione o un inteso. I dati immessi nelle schede CVR restano nella sessione aperta e non entrano nell'archivio dei moduli. Per l'impiego valgono l'IPCL e le disposizioni vigenti: una procedura per scambio, ripetizione completa da parte del ricevente, esclusione per treni ETCS e uso delle forme tradizionali quando l'SCR è guasto. Il manuale allegato segnala una discordanza tra revisione indicata in copertina e cronologia modifiche alla data 15/10/2026: verificare la versione normativa prima di usare le schede in esercizio.
+
+
+
+## Aggiornamento 1.17.1 — stabilità
+
+Chiudi le vecchie schede dopo l’aggiornamento: l’app consente una sola sessione alla volta per proteggere i salvataggi. Ora controlla date, orari, progressivi e caratteri non supportati nei PDF prima della conferma; verifica anche la struttura dei backup e marca come esportati soltanto i moduli presenti nella copia. In caso di errore di salvataggio conserva la bozza e riprova. Dettagli e limiti nella sezione 15 di [DOCUMENTAZIONE.md](DOCUMENTAZIONE.md).

@@ -1,6 +1,6 @@
 /* Funzionamento offline. A ogni aggiornamento dell'app aumentare VERSIONE.
    I file vengono sempre scaricati freschi dal server (cache: 'reload'), non dalla memoria temporanea del browser. */
-var VERSIONE = 'm40-v1.17.0-cvr';
+var VERSIONE = 'm40-v1.17.1-stabilita';
 var FILE = ['./', 'index.html', 'style.css', 'moduli.js', 'cvr-data.js', 'app.js', 'pdf-export.js', 'vendor/pdf-lib.min.js', 'assets/moduli-originali.pdf', 'assets/moduli-ferrovienord.pdf', 'manifest.webmanifest', 'icon.svg', 'icon-192.png', 'icon-512.png'];
 
 self.addEventListener('install', function (e) {
@@ -20,3 +20,4 @@ self.addEventListener('fetch', function (e) {
     });
   }));
 });
+

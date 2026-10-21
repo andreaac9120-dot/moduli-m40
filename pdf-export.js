@@ -40,6 +40,17 @@
     return String(value == null ? '' : value).replace(/[\u2018\u2019]/g,"'").replace(/[\u201c\u201d]/g,'"')
       .replace(/[\u2013\u2014]/g,'-').replace(/\u2026/g,'...').replace(/\u00a0/g,' ').replace(/[\t\r]/g,' ');
   }
+  function unsupportedCharacters(value) {
+    var found = new Set(), extra = '€‚ƒ„…†‡ˆ‰Š‹ŒŽ‘’“”•–—˜™š›œžŸ';
+    function visit(v) {
+      if (typeof v === 'string') Array.from(clean(v)).forEach(function (ch) {
+        var n = ch.codePointAt(0);
+        if (ch !== '\n' && !((n >= 32 && n <= 126) || (n >= 160 && n <= 255) || extra.indexOf(ch) >= 0)) found.add(ch);
+      });
+      else if (v && typeof v === 'object') Object.keys(v).forEach(function (k) { visit(v[k]); });
+    }
+    visit(value); return Array.from(found);
+  }
   function wrap(value,font,size,width) {
     var lines=[];
     clean(value).split('\n').forEach(function(paragraph){
@@ -58,6 +69,8 @@
     return lines;
   }
   async function build(r,originalBytes) {
+    var unsupported = unsupportedCharacters([r.campi,r.pv,r.scelta,r.presc,r.libera,r.firmatario,r.nome]);
+    if (unsupported.length) throw new Error('Caratteri non supportati dal PDF: ' + unsupported.join(' ') + '. Il testo non è stato modificato.');
     var cfg=MODELLI[r.moduloId];if(!cfg)throw new Error('Il modello PDF originale non è disponibile per questo modulo.');
     var lib=root.PDFLib,src=await lib.PDFDocument.load(originalBytes),out=await lib.PDFDocument.create();
     var pages=await out.copyPages(src,[cfg.pages[0]]);pages.forEach(function(p){out.addPage(p);});
@@ -224,5 +237,6 @@
     var pages=await out.copyPages(src,cfg.pages.slice(1));pages.forEach(function(p){out.addPage(p);});
     return out.save();
   }
-  var api={build:build,buildBack:buildBack,supports:function(id){return !!MODELLI[id];},source:function(id){return MODELLI[id]&&MODELLI[id].source||'assets/moduli-originali.pdf';},hasBack:function(id){return !!(MODELLI[id]&&MODELLI[id].pages.length>1);},hasGuardColumn:function(id){return !!(MODELLI[id]&&MODELLI[id].right!=null);}};root.M40Pdf=api;if(typeof module!=='undefined')module.exports=api;
+  var api={unsupportedCharacters:unsupportedCharacters,build:build,buildBack:buildBack,supports:function(id){return !!MODELLI[id];},source:function(id){return MODELLI[id]&&MODELLI[id].source||'assets/moduli-originali.pdf';},hasBack:function(id){return !!(MODELLI[id]&&MODELLI[id].pages.length>1);},hasGuardColumn:function(id){return !!(MODELLI[id]&&MODELLI[id].right!=null);}};root.M40Pdf=api;if(typeof module!=='undefined')module.exports=api;
 })(typeof window!=='undefined'?window:globalThis);
+
