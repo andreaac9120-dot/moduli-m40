@@ -1,6 +1,6 @@
 # Moduli M.40 — guida completa
 
-**Versione documentata:** 1.16.1-stabilita · 21 ottobre 2026  
+**Versione documentata:** 1.17.1-stabilita · 21 ottobre 2026
 **Indirizzo dell'app:** https://andreaac9120-dot.github.io/moduli-m40/
 
 L'app aiuta a compilare, rileggere, produrre in PDF e archiviare otto moduli di prescrizione ai treni. Funziona sul telefono e, dopo il primo caricamento completo, anche senza connessione. È un supporto alla compilazione: l'operatore deve verificare il contenuto e seguire le procedure in vigore.
@@ -199,3 +199,20 @@ L'app usa un **service worker** per tenere una copia dei file necessari, compres
 L'app è una pagina web statica senza server applicativo. `index.html` carica gli script; `moduli.js` descrive gli otto modelli, i campi e le prescrizioni; `app.js` gestisce schermate, bozza, riepilogo e archivio; `pdf-export.js` colloca i dati nelle coordinate dei modelli originali mediante `vendor/pdf-lib.min.js`; `style.css` definisce l'interfaccia. I sorgenti dei modelli sono `assets/moduli-originali.pdf` per RFI e `assets/moduli-ferrovienord.pdf` per FERROVIENORD. `sw.js` gestisce la copia offline e il caricamento degli aggiornamenti; `manifest.webmanifest` e le icone permettono l'installazione.
 
 La versione del modello e quella dell'app sono salvate nei singoli record. Le informazioni operative sono conservate nel `localStorage` del browser; il backup dell'archivio è un file JSON con `contatori` e `archivio`. Per aggiornare i modelli PDF, occorre ricontrollare le coordinate in `pdf-export.js` e aumentare la versione della cache in `sw.js`.
+
+
+
+## 15. Stabilità e recupero — versione 1.17.1
+
+- Usa una sola scheda/finestra dell’app alla volta. Una seconda apertura mostra un avviso e non può modificare i dati; chiudi la prima e premi **Riprova**. Occorre un browser aggiornato con Web Locks su HTTPS (anche dopo il caricamento offline). Al primo passaggio da una versione precedente, chiudi tutte le vecchie schede e riapri l’app.
+- La conferma richiede una data reale nel formato `gg/mm/aaaa`, un’ora `hh:mm` tra 00:00 e 23:59 e progressivi interi positivi. I caratteri non rappresentabili nei PDF attuali sono segnalati prima della conferma: il testo non viene sostituito automaticamente.
+- È bloccata una seconda conferma dello stesso modello, progressivo e data, anche se il primo modulo è nel cestino. La verifica considera i dati presenti sul dispositivo; l’eliminazione definitiva rimuove anche tale riferimento. La modifica manuale di un contatore richiede comunque la verifica della sequenza da parte dell’operatore.
+- Il prossimo numero è salvato prima del record. Se la memoria si esaurisce tra le due operazioni, la bozza rimane e può essere riconfermata con il suo numero. Se la bozza viene invece eliminata, può restare un numero saltato: non è un modulo confermato. Una conferma già presente non viene riscritta da un tentativo successivo.
+- **Esportato** si applica soltanto ai record e ai contenuti effettivamente presenti nella copia avviata. I moduli aggiunti durante una condivisione restano non esportati. Le vecchie copie riconosciute soltanto tramite la data globale possono apparire nuovamente non esportate: esegui un nuovo backup. Il download o caricamento su Drive va sempre verificato personalmente.
+- Importazione e consultazione controllano struttura, versione, tipi dei campi e identificatori. Un file non valido viene rifiutato senza importazione parziale. Due record con lo stesso identificatore ma contenuti diversi richiedono verifica manuale; non vengono sovrascritti. I vecchi dati confermati non vengono automaticamente corretti o riscritti per adeguarli alle nuove regole di compilazione.
+
+### Verifiche tecniche
+
+Con Node.js e Python con PyMuPDF installati, eseguire `python scripts/test.py`. Il comando comprende test logici, guasti simulati dello storage, validazione backup, blocco tra sessioni, caratteri PDF e controlli delle coordinate dei modelli.
+
+Il salvataggio resta basato su localStorage: questa release riduce i rischi senza introdurre una migrazione a IndexedDB. Il ciclo completo di installazione/aggiornamento PWA, la condivisione Drive e il comportamento su smartphone reale richiedono ancora un collaudo dedicato. La protezione tra schede vale per le sessioni di questa versione; le vecchie schede vanno chiuse durante l’aggiornamento.

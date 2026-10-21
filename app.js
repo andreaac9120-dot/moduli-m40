@@ -1,6 +1,6 @@
 'use strict';
 /* App Moduli M.40 — funziona offline; tutti i dati restano sul telefono (localStorage). */
-var APP_VERSIONE = '1.17.0-cvr';
+var APP_VERSIONE = '1.17.1-stabilita';
 var K_CNT = 'm40.contatori', K_ARC = 'm40.archivio', K_DRAFT = 'm40.bozza', K_EXP = 'm40.ultimaEsportazione', K_TRASH = 'm40.cestino', K_DELID = 'm40.eliminati', K_ADC = 'm40.cognomeAdc', K_PROFILO = 'm40.profilo', K_TEMA = 'm40.tema', K_RETE = 'm40.rete';
 
 var LS = {
@@ -68,11 +68,12 @@ function chiediTesto(testo, val, mode, ph) { return finestra({testo: testo, ok: 
 /* ---------- navigazione (tasto indietro di Android) ---------- */
 var vistaCorrente = null;
 function vai(vista, arg, sostituisci) {
+  if (!sessioneAttiva) return;
   var st = {v: vista, a: arg || null};
   try { if (sostituisci) history.replaceState(st, ''); else history.pushState(st, ''); } catch (e) {}
   mostra(st);
 }
-window.addEventListener('popstate', function (e) { mostra(e.state || {v: 'home'}); });
+window.addEventListener('popstate', function (e) { if (!sessioneAttiva) return; mostra(e.state || {v: 'home'}); });
 function mostra(st) {
   vistaCorrente = st.v;
   window.scrollTo(0, 0);
@@ -96,7 +97,7 @@ function chiediProgressivo(m, attuale) {
   return chiediTesto('Numero progressivo per ' + m.nome + (attuale ? '\n(attuale: N. ' + attuale + ')' : '') + '\nInserisci il numero da usare per il prossimo modulo:', attuale || '1', 'numeric').then(function (r) {
     if (r === null) return null;
     var n = Number(String(r).trim());
-    if (!Number.isSafeInteger(n) || n < 1) { avviso('Numero non valido.'); return null; }
+    if (!progressivoValido(String(r).trim())) { avviso('Numero non valido.'); return null; }
     if (!attuale) return impostaProssimo(m.id, n) ? n : null;
     return conferma('Confermi? Il prossimo ' + m.nome + ' sarà il N. ' + n + '.').then(function (ok) { if (!ok) return null; return impostaProssimo(m.id, n) ? n : null; });
   });
@@ -108,7 +109,7 @@ function vistaHome() {
   var h = '<header class="top"><div><h1>Moduli M.40</h1><div class="sub">Prescrizioni ai treni · Captrain</div></div><div class="dx"><div class="top-actions">' + temaBtn() + '<details class="menu-azioni"><summary aria-label="Apri menu impostazioni" title="Impostazioni">⋮</summary><div class="menu-voci"><button id="apriImp">Impostazioni</button></div></details></div>' + statoRete() + '</div></header>';
   if (bozza && mod(bozza.moduloId)) {
     var bm = mod(bozza.moduloId);
-    h += '<div class="avviso"><b>Modulo in compilazione:</b> ' + esc(bm.nome) + ' N. ' + bozza.prog +
+    h += '<div class="avviso"><b>Modulo in compilazione:</b> ' + esc(bm.nome) + ' N. ' + esc(bozza.prog) +
       '<div class="riga"><button class="pri" id="riprendi">Riprendi</button><button id="scarta">Elimina bozza</button></div></div>';
   }
   var reti = [];
@@ -191,6 +192,7 @@ function nuovaCompilazione(m) {
 function vistaForm() {
   var d = LS.get(K_DRAFT, null), m = d && mod(d.moduloId);
   if (!m) { vai('home', null, true); return; }
+  if (d.uid && LS.get(K_ARC, []).some(function (r) { return r.uid === d.uid; })) { vai('record', d.uid, true); return; }
   var now = new Date(), dateAdded = false;
   if (!d.v.dat) { d.v.dat = dataCorrente(now); dateAdded = true; }
   if (!d.v.ora) { d.v.ora = oraCorrente(now); dateAdded = true; }
@@ -361,10 +363,16 @@ function numeriPrescrizioni(m, checks) { return checks.filter(function (n) { ret
 /* ---------- controlli e riepilogo ---------- */
 function controlla(m, d) {
   var e = [], v = d.v;
+  if (!Number.isSafeInteger(d.prog) || d.prog < 1 || d.prog >= Number.MAX_SAFE_INTEGER) e.push('Progressivo del modulo non valido');
+  if (!dataValida(v.dat)) e.push('Data non valida: usa gg/mm/aaaa');
+  if (!oraValida(v.ora)) e.push('Ora non valida: usa hh:mm (00:00–23:59)');
+  if (!progressivoValido(v.agn)) e.push('Progressivo agente: inserisci un intero positivo');
+  var caratteri = M40Pdf.unsupportedCharacters([v, prescSelezionate(m, d), d.libera === true ? d.liberaTesto : null, d.firmatario]);
+  if (caratteri.length) e.push('Caratteri non supportati dal PDF: ' + caratteri.join(' ') + '. Correggi il testo prima della conferma');
   if (!/^\d{2}$/.test(v.sal || '')) e.push('Numero saltuario (2 cifre) mancante');
   if (!(v.agn || '').trim() || !/^\d{2}$/.test(v.ags || '')) e.push(m.id === 'fn_0229' ? 'N° DM/DCO (progressivo/saltuario 2 cifre) mancante' : m.tipo === 'libero' ? 'N° DCO/DM (progressivo/saltuario 2 cifre) mancante' : 'N° DM/DCO trasmittente (progressivo/saltuario 2 cifre) mancante');
   if (m.tipo === 'libero') {
-    if (!d.scelta.oa) e.push('Scegli «Si ordina» o «Si dà avviso»');
+    if (['Si ordina', 'Si dà avviso'].indexOf(d.scelta.oa) < 0) e.push('Scegli «Si ordina» o «Si dà avviso»');
     if (!(v.dest || '').trim()) e.push('Destinatario mancante');
     if (!(v.testo || '').trim()) e.push('Testo del dispaccio mancante');
     if (!(v.agt || '').trim()) e.push(m.id === 'fn_0229' ? 'Cognome DM/DCO mancante' : 'Cognome DCO/DM mancante');
@@ -375,7 +383,7 @@ function controlla(m, d) {
   if (d.libera !== true && d.libera !== false) e.push('Rispondi Sì/No sulla prescrizione libera');
   if (d.libera === true && !(d.liberaTesto || '').trim()) e.push('Testo prescrizione libera mancante');
   if (!d.checks.length) e.push('Nessuna casella selezionata');
-  m.presc.forEach(function (p) { if (p.scelta && d.checks.indexOf(p.n) >= 0 && !d.scelta[p.n]) e.push('Prescrizione ' + p.n + ': scegli ' + p.scelta.join(' / ')); });
+  m.presc.forEach(function (p) { if (p.scelta && d.checks.indexOf(p.n) >= 0 && p.scelta.indexOf(d.scelta[p.n]) < 0) e.push('Prescrizione ' + p.n + ': scegli ' + p.scelta.join(' / ')); });
   m.presc.forEach(function (p) {
     if (d.checks.indexOf(p.n) < 0) return;
     if (m.id === 'fn_0229_2' && p.n === 2) {
@@ -388,6 +396,16 @@ function controlla(m, d) {
   });
   return e;
 }
+function progressivoValido(value) {
+  return /^\d+$/.test(String(value == null ? '' : value)) && Number.isSafeInteger(Number(value)) && Number(value) > 0 && Number(value) < Number.MAX_SAFE_INTEGER;
+}
+function dataValida(value) {
+  var m = /^(\d{2})\/(\d{2})\/(\d{4})$/.exec(value || '');
+  if (!m || +m[3] < 1000) return false;
+  var d = new Date(+m[3], +m[2] - 1, +m[1]);
+  return d.getFullYear() === +m[3] && d.getMonth() === +m[2] - 1 && d.getDate() === +m[1];
+}
+function oraValida(value) { return /^(?:[01]\d|2[0-3]):[0-5]\d$/.test(value || ''); }
 function testoPresc(m, p, d) {
   if (m.id === 'fn_0229_2' && p.n === 2) {
     return d.scelta[2] === 'verso'
@@ -525,25 +543,43 @@ function riepilogo(m, d, confermato) {
 
 /* ---------- conferma e archivio ---------- */
 function registra(m, d) {
-  var adesso = new Date(), quando = adesso.toLocaleString('it-IT');
-  // La stessa bozza mantiene l'identificatore anche se il contatore non si salva.
+  var arc = LS.get(K_ARC, []), existing = d.uid && arc.filter(function (r) { return r.uid === d.uid; })[0];
+  if (existing) {
+    // Una conferma già salvata è immutabile, anche dopo un tentativo interrotto.
+    var ce = contatori(); ce[existing.moduloId] = Math.max(ce[existing.moduloId] || 0, existing.prog + 1);
+    if (!LS.set(K_CNT, ce)) return null;
+    eliminaBozzaConfermata(d.uid);
+    return existing;
+  }
+  var errori = controlla(m, d);
+  if (errori.length) { avviso('Conferma non salvata: ' + errori.join(' · ')); return null; }
+  var precedenti = arc.concat(LS.get(K_TRASH, []).map(function (t) { return t.rec; }));
+  if (precedenti.some(function (r) { return r.moduloId === m.id && r.prog === d.prog && normData(r.campi && r.campi.dat) === normData(d.v.dat); })) {
+    avviso('Esiste già un modulo di questo modello con lo stesso progressivo e la stessa data, anche nel cestino. Conserva il testo della bozza e avvia un nuovo modulo con il progressivo corretto.');
+    return null;
+  }
   if (!d.uid) { d.uid = uid(); if (!LS.set(K_DRAFT, d)) return null; }
+  var adesso = new Date(), quando = adesso.toLocaleString('it-IT');
   var rec = {
     uid: d.uid, moduloId: m.id, nome: m.nome, versioneModello: m.versione, appVersione: APP_VERSIONE,
     prog: d.prog, sal: d.v.sal, campi: d.v, presc: prescSelezionate(m, d), scelta: d.scelta, pv: d.pv, compilatoreAG: d.compilatoreAG === true, firmatario: d.firmatario || null,
     libera: d.libera === true ? d.liberaTesto : null, stato: 'collazionato/confermato',
     confermato: quando, confermatoISO: adesso.toISOString(), riepilogo: riepilogo(m, d, quando)
   };
-  var arc = LS.get(K_ARC, []), existing = arc.filter(function (r) { return r.uid === d.uid; })[0];
-  if (!existing) { arc.push(rec); if (!LS.set(K_ARC, arc)) return null; }
   var c = contatori(); c[m.id] = Math.max(c[m.id] || 0, d.prog + 1);
   if (!LS.set(K_CNT, c)) return null;
+  arc.push(rec);
+  if (!LS.set(K_ARC, arc)) return null;
   if (m.id !== 'fn_0229' && (d.v.adc || '').trim()) LS.set(K_ADC, d.v.adc.trim());
-  LS.del(K_DRAFT);
-  return existing || rec;
+  eliminaBozzaConfermata(d.uid);
+  return rec;
+}
+function eliminaBozzaConfermata(id) {
+  var corrente = LS.get(K_DRAFT, null);
+  if (corrente && corrente.uid === id) LS.del(K_DRAFT);
 }
 /* ---------- stato esportazione, cestino ---------- */
-function esportato(r) { if (r.esportato) return true; var e = LS.get(K_EXP, null); return !!(e && r.confermatoISO <= e); }
+function esportato(r) { return !!r.esportato; }
 function nelCestino(uids) {
   var arc = LS.get(K_ARC, []), tr = LS.get(K_TRASH, []), adesso = new Date().toISOString(), resta = [];
   arc.forEach(function (r) { if (uids.indexOf(r.uid) >= 0) tr.push({rec: r, eliminatoISO: adesso}); else resta.push(r); });
@@ -568,7 +604,7 @@ function dataLocale(iso) { var d = new Date(iso), p = function (n) { return (n <
 var filtroArc = {testo: '', treno: '', data: '', stato: 'tutti'};
 function vistaArchivio() {
   pulisciCestino();
-  var tr = LS.get(K_TRASH, []), sel = {}, selezione = false;
+  var tr = LS.get(K_TRASH, []), sel = Object.create(null), selezione = false;
   var h = '<header class="top"><div><button class="link" id="indietro">‹ Moduli</button><h1>Archivio</h1><div class="sub" id="conteggio"></div></div>' + statoRete() + '</header>';
   h += '<div class="riga"><button class="pri" id="drv">Salva su Drive</button><button id="exp">Esporta archivio</button><button id="imp">Importa</button><button id="cest">Cestino (' + tr.length + ')</button><input type="file" id="impf" accept=".json,.txt,application/json,text/plain" hidden></div>' +
     '<div class="riga"><button class="full" id="cons">Consulta file esportato</button><input type="file" id="consf" accept=".json,.txt,application/json,text/plain" hidden></div>';
@@ -602,15 +638,15 @@ function vistaArchivio() {
     $('#conteggio').textContent = arc.length + ' moduli confermati · ' + nonEsp.length + ' non esportati';
     $('#elenco').innerHTML = lista.length ? lista.map(function (r) {
       var ne = !esportato(r);
-      return '<div class="voceriga">' + (selezione ? '<input type="checkbox" class="selchk" data-s="' + r.uid + '"' + (sel[r.uid] ? ' checked' : '') + ' aria-label="Seleziona">' : '') +
-        '<button class="voce" data-r="' + r.uid + '"><b>' + esc(r.nome) + ' N. ' + r.prog + '/' + esc(r.sal) + '</b><span>Treno ' + esc(r.campi.trn || '—') + ' · ' + esc(r.campi.dat || 'data —') + '</span><span>Confermato ' + esc(r.confermato) + '</span>' +
+      return '<div class="voceriga">' + (selezione ? '<input type="checkbox" class="selchk" data-s="' + esc(r.uid) + '"' + (sel[r.uid] ? ' checked' : '') + ' aria-label="Seleziona">' : '') +
+        '<button class="voce" data-r="' + esc(r.uid) + '"><b>' + esc(r.nome) + ' N. ' + esc(r.prog) + '/' + esc(r.sal) + '</b><span>Treno ' + esc(r.campi.trn || '—') + ' · ' + esc(r.campi.dat || 'data —') + '</span><span>Confermato ' + esc(r.confermato) + '</span>' +
         '<span class="badge ' + (ne ? 'ne' : 'es') + '">' + (ne ? 'non esportato' : 'esportato') + '</span></button>' +
-        (ne && !selezione ? '<button class="x" data-x="' + r.uid + '" aria-label="Elimina modulo">✕</button>' : '') + '</div>';
+        (ne && !selezione ? '<button class="x" data-x="' + esc(r.uid) + '" aria-label="Elimina modulo">✕</button>' : '') + '</div>';
     }).join('') : '<div class="cinfo">' + (arc.length ? 'Nessun modulo corrisponde ai filtri.' : 'Nessun modulo confermato.') + '</div>';
     var b = $('#delNonEsp'); b.hidden = !nonEsp.length || selezione; b.textContent = 'Elimina tutti i non esportati (' + nonEsp.length + ')';
     $('#svuota').hidden = !arc.length || selezione;
     $('#selN').textContent = Object.keys(sel).length + ' selezionati';
-    $$('[data-r]').forEach(function (x) { x.onclick = function () { if (selezione) { var c = $('[data-s="' + x.dataset.r + '"]'); c.checked = !c.checked; c.onchange(); } else vai('record', x.dataset.r); }; });
+    $$('[data-r]').forEach(function (x) { x.onclick = function () { if (selezione) { var c = $('[data-s="' + CSS.escape(x.dataset.r) + '"]'); c.checked = !c.checked; c.onchange(); } else vai('record', x.dataset.r); }; });
     $$('[data-x]').forEach(function (x) { x.onclick = function () {
       var r = arc.filter(function (q) { return q.uid === x.dataset.x; })[0];
       conferma('Eliminare ' + descr(r) + '?\nNon è ancora stato esportato. Andrà nel cestino, da cui potrai ripristinarlo per 30 giorni.', 'Elimina', true).then(function (ok) { if (ok) { nelCestino([r.uid]); vistaArchivio(); } });
@@ -622,8 +658,8 @@ function vistaArchivio() {
   ['#fTreno', '#fData', '#fTesto'].forEach(function (s) { $(s).oninput = aggF; });
   $('#fData').onchange = aggF; $('#fStato').onchange = aggF;
   $('#azzera').onclick = function () { filtroArc = {testo: '', treno: '', data: '', stato: 'tutti'}; vistaArchivio(); };
-  $('#selBtn').onclick = function () { selezione = true; sel = {}; $('#selBar').hidden = false; disegna(); };
-  $('#selAnn').onclick = function () { selezione = false; sel = {}; $('#selBar').hidden = true; disegna(); };
+  $('#selBtn').onclick = function () { selezione = true; sel = Object.create(null); $('#selBar').hidden = false; disegna(); };
+  $('#selAnn').onclick = function () { selezione = false; sel = Object.create(null); $('#selBar').hidden = true; disegna(); };
   $('#selDel').onclick = function () {
     var ids = Object.keys(sel); if (!ids.length) { avviso('Nessun modulo selezionato.'); return; }
     var arc = LS.get(K_ARC, []), nEsp = arc.filter(function (r) { return sel[r.uid] && esportato(r); }).length;
@@ -658,8 +694,8 @@ function vistaCestino() {
   var h = '<header class="top"><div><button class="link" id="indietro">‹ Archivio</button><h1>Cestino</h1><div class="sub">' + tr.length + ' moduli · eliminati definitivamente dopo 30 giorni</div></div></header>';
   h += '<div class="lista">' + (tr.length ? tr.map(function (t) {
     var r = t.rec, giorni = Math.max(0, 30 - Math.floor((Date.now() - Date.parse(t.eliminatoISO)) / 864e5));
-    return '<div class="card"><div class="cnome">' + esc(r.nome) + ' N. ' + r.prog + '/' + esc(r.sal) + '</div><div class="cinfo">Treno ' + esc(r.campi.trn || '—') + ' · confermato ' + esc(r.confermato) + '</div><div class="cinfo">Eliminato il ' + esc(new Date(t.eliminatoISO).toLocaleString('it-IT')) + ' · ancora ' + giorni + ' giorni</div>' +
-      '<div class="riga"><button class="pri" data-rip="' + r.uid + '">Ripristina</button><button class="danger" data-def="' + r.uid + '">Elimina definitivamente</button></div></div>';
+    return '<div class="card"><div class="cnome">' + esc(r.nome) + ' N. ' + esc(r.prog) + '/' + esc(r.sal) + '</div><div class="cinfo">Treno ' + esc(r.campi.trn || '—') + ' · confermato ' + esc(r.confermato) + '</div><div class="cinfo">Eliminato il ' + esc(new Date(t.eliminatoISO).toLocaleString('it-IT')) + ' · ancora ' + giorni + ' giorni</div>' +
+      '<div class="riga"><button class="pri" data-rip="' + esc(r.uid) + '">Ripristina</button><button class="danger" data-def="' + esc(r.uid) + '">Elimina definitivamente</button></div></div>';
   }).join('') : '<div class="cinfo">Il cestino è vuoto.</div>') + '</div>';
   if (tr.length) h += '<div class="fondo"><button class="danger full" id="svuotaC">Svuota cestino</button></div>';
   app.innerHTML = h;
@@ -690,7 +726,7 @@ function vistaRecord(id) {
   var r = LS.get(K_ARC, []).filter(function (x) { return x.uid === id; })[0];
   if (!r) { vai('archivio', null, true); return; }
   var ne = !esportato(r);
-  var h = '<header class="top"><div><button class="link" id="indietro">‹ Archivio</button><h1>' + esc(r.nome) + ' N. ' + r.prog + '/' + esc(r.sal) + '</h1><div class="sub">Confermato il ' + esc(r.confermato) + ' · modello ' + esc(r.versioneModello) + '</div></div><span class="bloc">bloccato</span></header>';
+  var h = '<header class="top"><div><button class="link" id="indietro">‹ Archivio</button><h1>' + esc(r.nome) + ' N. ' + esc(r.prog) + '/' + esc(r.sal) + '</h1><div class="sub">Confermato il ' + esc(r.confermato) + ' · modello ' + esc(r.versioneModello) + '</div></div><span class="bloc">bloccato</span></header>';
   h += '<span class="badge ' + (ne ? 'ne' : 'es') + '">' + (ne ? 'non esportato' : 'esportato') + '</span>';
   h += '<pre class="rec">' + esc(r.riepilogo) + '</pre><div class="riga">' + (M40Pdf.supports(r.moduloId) ? '<button class="pri" id="pdf">Scarica modulo PDF compilato</button>' + (M40Pdf.hasBack(r.moduloId) ? '<button id="vediRetro">Consulta il retro</button>' : '') : '') + '<button id="txt">Scarica come testo</button><button id="drv1">' + (M40Pdf.supports(r.moduloId) ? 'Condividi PDF / Drive' : 'Salva su Drive') + '</button>' + (navigator.share ? '<button id="sh">Condividi testo</button>' : '') + '<button id="home">Moduli</button></div>';
   h += '<div class="fondo"><button class="danger-lite full" id="del">Elimina questo modulo</button></div>';
@@ -755,18 +791,33 @@ function condividiPdf(r) {
 function pacchettoArchivio() {
   var adesso = new Date(), iso = adesso.toISOString(), arc = LS.get(K_ARC, []);
   var p = function (n) { return (n < 10 ? '0' : '') + n; };
-  return {iso: iso, n: arc.length, testo: JSON.stringify({app: 'moduli-m40', formato: 1, esportato: iso, contatori: contatori(), archivio: arc}, null, 1),
+  return {iso: iso, n: arc.length, records: arc.map(improntaRecord), testo: JSON.stringify({app: 'moduli-m40', formato: 1, esportato: iso, contatori: contatori(), archivio: arc}, null, 1),
     nome: 'm40-archivio-' + adesso.getFullYear() + p(adesso.getMonth() + 1) + p(adesso.getDate()) + '-' + p(adesso.getHours()) + p(adesso.getMinutes())};
 }
-function segnaEsportato(iso) {
-  var arc = LS.get(K_ARC, []);
-  arc.forEach(function (r) { if (!r.esportato) r.esportato = iso; });
-  LS.set(K_ARC, arc); LS.set(K_EXP, iso);
+// Comprende il contenuto: un UID uguale con dati differenti non è coperto dalla copia.
+function improntaRecord(r) {
+  var copia = Object.assign({}, r); delete copia.esportato;
+  function ordinato(value) {
+    if (Array.isArray(value)) return value.map(ordinato);
+    if (value && typeof value === 'object') {
+      var result = Object.create(null);
+      Object.keys(value).sort().forEach(function (key) { result[key] = ordinato(value[key]); });
+      return result;
+    }
+    return value;
+  }
+  return JSON.stringify(ordinato(copia));
+}
+function segnaEsportato(pk) {
+  var inclusi = new Set(pk.records), arc = LS.get(K_ARC, []);
+  arc.forEach(function (r) { if (inclusi.has(improntaRecord(r))) r.esportato = pk.iso; });
+  if (!LS.set(K_ARC, arc)) return false;
+  return LS.set(K_EXP, pk.iso);
 }
 function esporta() {
   var pk = pacchettoArchivio();
   scarica(new Blob([pk.testo], {type: 'application/json'}), pk.nome + '.json');
-  segnaEsportato(pk.iso);
+  segnaEsportato(pk);
 }
 /* Salva su Drive: apre il menu di condivisione di Android (scegliere Drive e la cartella).
    Chrome non condivide file .json: il file è .txt con lo stesso contenuto, e l'app lo rilegge. */
@@ -787,32 +838,53 @@ function salvaSuDrive() {
   if (!pk.n) { avviso('L\'archivio è vuoto: non c\'è niente da salvare.'); return; }
   condividiFile(pk.testo, pk.nome + '.txt', 'Archivio Moduli M.40').then(function (ok) {
     if (!ok) return;
-    segnaEsportato(pk.iso);
+    if (!segnaEsportato(pk)) return;
     vistaArchivio();
     avviso('File «' + pk.nome + '.txt» inviato. Se hai scelto Drive, controlla che sia comparso nella cartella: senza linea Drive lo carica appena torna la connessione.');
   });
 }
+function oggettoDati(v) { return !!v && typeof v === 'object' && !Array.isArray(v); }
+function mappaTesti(v) { return oggettoDati(v) && Object.keys(v).every(function (k) { return typeof v[k] === 'string'; }); }
+function recordImportabile(r) {
+  return oggettoDati(r) && typeof r.uid === 'string' && /^[A-Za-z0-9_-]{1,128}$/.test(r.uid) &&
+    typeof r.moduloId === 'string' && !!mod(r.moduloId) && Number.isSafeInteger(r.prog) && progressivoValido(r.prog) &&
+    typeof r.nome === 'string' && typeof r.sal === 'string' && /^\d{2}$/.test(r.sal) && mappaTesti(r.campi) &&
+    Array.isArray(r.presc) && r.presc.every(function (p) { return oggettoDati(p) && Number.isSafeInteger(p.n) && p.n > 0 && typeof p.testo === 'string' && typeof p.numerata === 'boolean'; }) &&
+    typeof r.riepilogo === 'string' && typeof r.confermato === 'string' && typeof r.confermatoISO === 'string' && Number.isFinite(Date.parse(r.confermatoISO)) &&
+    (r.scelta == null || mappaTesti(r.scelta)) && (r.pv == null || mappaTesti(r.pv)) &&
+    (r.firmatario == null || mappaTesti(r.firmatario)) && (r.libera == null || typeof r.libera === 'string') &&
+    (r.versioneModello == null || typeof r.versioneModello === 'string') &&
+    (r.compilatoreAG == null || typeof r.compilatoreAG === 'boolean');
+}
+function leggiArchivio(testo) {
+  var dati = JSON.parse(testo);
+  if (!dati || dati.app !== 'moduli-m40' || (dati.formato != null && dati.formato !== 1) || !Array.isArray(dati.archivio) || !dati.archivio.every(recordImportabile))
+    throw new Error('Archivio non valido, incompleto o di una versione non supportata. Nessun dato modificato.');
+  if (dati.contatori != null && (!oggettoDati(dati.contatori) || !Object.keys(dati.contatori).every(function (k) { return !!mod(k) && /^\d+$/.test(String(dati.contatori[k])) && Number.isSafeInteger(Number(dati.contatori[k])) && Number(dati.contatori[k]) > 0; })))
+    throw new Error('Contatori del backup non validi. Nessun dato modificato.');
+  var noti = new Map();
+  dati.archivio.forEach(function (r) {
+    if (noti.has(r.uid) && improntaRecord(noti.get(r.uid)) !== improntaRecord(r)) throw new Error('Il backup contiene versioni diverse dello stesso modulo. Nessun dato modificato.');
+    noti.set(r.uid, r);
+  });
+  dati.archivio = Array.from(noti.values());
+  return dati;
+}
 function importa(file) {
   var fr = new FileReader();
   fr.onload = function () {
-    var dati; try { dati = JSON.parse(fr.result); } catch (e) { avviso('File non valido.'); return; }
+    var dati; try { dati = leggiArchivio(fr.result); } catch (e) { avviso('File non valido: ' + e.message); return; }
     if (!dati || dati.app !== 'moduli-m40' || !Array.isArray(dati.archivio)) { avviso('Questo file non è un archivio dei Moduli M.40.'); return; }
     var arc = LS.get(K_ARC, []), noti = Object.create(null), eliminati = Object.create(null);
     arc.forEach(function (r) { noti[r.uid] = 1; });
     LS.get(K_TRASH, []).forEach(function (t) { eliminati[t.rec.uid] = 1; });
     LS.get(K_DELID, []).forEach(function (u) { eliminati[u] = 1; });
-    var validi = dati.archivio.filter(function (r) {
-      return r && typeof r.uid === 'string' && r.uid.length > 0 && typeof r.moduloId === 'string' && mod(r.moduloId) &&
-        Number.isSafeInteger(r.prog) && r.prog > 0 && r.prog < Number.MAX_SAFE_INTEGER &&
-        typeof r.nome === 'string' && typeof r.sal === 'string' && r.campi && !Array.isArray(r.campi) &&
-        typeof r.campi === 'object' && Array.isArray(r.presc) && typeof r.riepilogo === 'string' &&
-        typeof r.confermato === 'string' && typeof r.confermatoISO === 'string';
-    });
-    if (validi.length !== dati.archivio.length) { avviso('Il file contiene moduli incompleti o non validi: importazione annullata.'); return; }
-    var nelFile = Object.create(null);
-    validi = validi.filter(function (r) { if (nelFile[r.uid]) return false; nelFile[r.uid] = true; return true; });
+    var validi = dati.archivio;
     var nuovi = validi.filter(function (r) { return !noti[r.uid] && !eliminati[r.uid]; });
     var elim = validi.filter(function (r) { return !noti[r.uid] && eliminati[r.uid]; });
+    if (validi.some(function (r) { var locale = arc.filter(function (x) { return x.uid === r.uid; })[0]; return locale && improntaRecord(locale) !== improntaRecord(r); })) {
+      avviso('Un modulo del backup ha lo stesso identificatore ma dati diversi da quello locale. Importazione annullata.'); return;
+    }
     var nPres = validi.length - nuovi.length - elim.length;
     function salvaContatoriImport() {
       var c = contatori(), ci = dati.contatori || {};
@@ -833,7 +905,11 @@ function importa(file) {
       testo += '.\nI progressivi verranno portati al valore più alto tra telefono e file.';
       return conferma(testo, 'Importa').then(function (ok) {
         if (!ok) return;
-        daImp.forEach(function (r) { if (!r.esportato) r.esportato = dati.esportato || new Date().toISOString(); });
+        arc = LS.get(K_ARC, []);
+        var conflitto = validi.some(function (r) { var locale = arc.filter(function (x) { return x.uid === r.uid; })[0]; return locale && improntaRecord(locale) !== improntaRecord(r); });
+        if (conflitto) { avviso('Un modulo del backup ha lo stesso identificatore ma dati diversi da quello locale. Importazione annullata.'); return; }
+        daImp = daImp.filter(function (r) { return !arc.some(function (x) { return x.uid === r.uid; }); });
+        daImp.forEach(function (r) { r.esportato = new Date().toISOString(); });
         if (!salvaContatoriImport()) return;
         if (!LS.set(K_ARC, arc.concat(daImp))) return;
         if (anche && elim.length) {
@@ -845,6 +921,7 @@ function importa(file) {
       });
     });
   };
+  fr.onerror = function () { avviso('Impossibile leggere il file. Nessun dato modificato.'); };
   fr.readAsText(file);
 }
 
@@ -854,12 +931,13 @@ var consulta = null, filtroCons = {treno: '', data: '', testo: ''};
 function apriConsulta(file) {
   var fr = new FileReader();
   fr.onload = function () {
-    var dati; try { dati = JSON.parse(fr.result); } catch (e) { avviso('File non valido.'); return; }
+    var dati; try { dati = leggiArchivio(fr.result); } catch (e) { avviso('File non valido: ' + e.message); return; }
     if (!dati || dati.app !== 'moduli-m40' || !Array.isArray(dati.archivio)) { avviso('Questo file non è un archivio dei Moduli M.40.'); return; }
     consulta = {nome: file.name, esportato: dati.esportato, archivio: dati.archivio.filter(function (r) { return r && r.uid; })};
     filtroCons = {treno: '', data: '', testo: ''};
     vai('consulta');
   };
+  fr.onerror = function () { avviso('Impossibile leggere il file. Nessun dato modificato.'); };
   fr.readAsText(file);
 }
 function filtraModuli(lista, f) {
@@ -1004,4 +1082,23 @@ if ('serviceWorker' in navigator) {
     }).catch(function () {});
   });
 }
-vai(LS.get(K_DRAFT, null) ? 'form' : 'home', null, true);
+var sessioneAttiva = false;
+function avvioProtetto() {
+  function bloccata(testo) {
+    app.innerHTML = '<section class="card"><h1>Moduli M.40</h1><p>' + esc(testo) + '</p><button id="riprovaAvvio">Riprova</button></section>';
+    $('#riprovaAvvio').onclick = function () { location.reload(); };
+  }
+  if (!navigator.locks || !navigator.locks.request) {
+    bloccata('Questo browser non permette di proteggere i salvataggi tra più schede. Apri l’app tramite HTTPS in una versione aggiornata di Chrome, Edge, Firefox o Safari. I dati salvati restano sul dispositivo.');
+    return;
+  }
+  navigator.locks.request('m40-sessione-scrittura', {ifAvailable: true}, function (lock) {
+    if (!lock) { bloccata('L’app è già aperta in un’altra scheda o finestra. Chiudi quella sessione, poi premi Riprova per usare questa.'); return; }
+    sessioneAttiva = true;
+    vai(LS.get(K_DRAFT, null) ? 'form' : 'home', null, true);
+    // Il browser rilascia il lock alla chiusura o al ricaricamento della pagina.
+    return new Promise(function () {});
+  }).catch(function () { sessioneAttiva = false; bloccata('Impossibile avviare una sessione protetta. Chiudi le altre schede e riprova.'); });
+}
+avvioProtetto();
+
