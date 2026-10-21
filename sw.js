@@ -1,6 +1,6 @@
 /* Funzionamento offline. A ogni aggiornamento dell'app aumentare VERSIONE.
    I file vengono sempre scaricati freschi dal server (cache: 'reload'), non dalla memoria temporanea del browser. */
-var VERSIONE = 'm40-v1.15.1-ruoli-0229';
+var VERSIONE = 'm40-v1.16.0-numeri-0229';
 var FILE = ['./', 'index.html', 'style.css', 'moduli.js', 'app.js', 'pdf-export.js', 'vendor/pdf-lib.min.js', 'assets/moduli-originali.pdf', 'assets/moduli-ferrovienord.pdf', 'manifest.webmanifest', 'icon.svg', 'icon-192.png', 'icon-512.png'];
 
 self.addEventListener('install', function (e) {

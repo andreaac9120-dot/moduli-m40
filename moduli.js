@@ -257,21 +257,17 @@ var MODULI = [
   rete: "FERROVIENORD",
   tipo: "libero",
   nome: "Modulo 0229 FERROVIENORD",
-  versione: "v3 · 20/10/2026",
+  versione: "v4 · 20/10/2026",
   campi: [
     {id: "sta", label: "Località di servizio"},
     {id: "trn", label: "Treno"},
     {id: "dat", label: "Data (del … /20…)", ph: "gg/mm/aaaa"},
     {tipo: "ps", label: "Progressivo / saltuario (mio)"},
     {id: "ora", label: "Ora", ph: "hh:mm"},
-    {id: "agt", label: "Agente trasmittente (profilo e cognome)", span: 2},
-    {tipo: "ag", label: "N° agente trasmittente (progressivo / saltuario)"},
-    {id: "ord", label: "Agente che dà l'ordine o l'avviso (profilo e firma)", span: 2},
-    {id: "adc", label: "Agente ricevente (profilo e cognome / firma)", span: 2},
-    {id: "ricevProg", label: "N° comunicato dal ricevente: progressivo"},
-    {id: "ricevSal", label: "N° comunicato dal ricevente: saltuario"}
+    {id: "agt", label: "Cognome DM / DCO", span: 2},
+    {tipo: "ag", label: "N° DM / DCO (progressivo / saltuario)"}
   ],
   destLabel: "a",
-  note: "Nel 0229 i ruoli possono cambiare: compila a mano solo i riquadri degli agenti pertinenti. Il profilo personale non firma automaticamente questo modulo. Il numero comunicato dal ricevente va inserito solo quando è noto."
+  note: "Nel 0229 servono solo il tuo progressivo/saltuario e quello del DM/DCO. Scegli chi trasmette il dispaccio per collocare i due numeri nei campi corretti. La firma non viene inserita automaticamente."
 }
 ];

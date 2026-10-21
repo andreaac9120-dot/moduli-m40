@@ -103,12 +103,14 @@
     }
     if(cfg.kind==='fn_libero'){
       var fnRecipient=clean(v.dest||'');
+      var fnNew=/^v4\b/.test(r.versioneModello||''),fnSend=fnNew&&r.scelta&&r.scelta.direzione==='invio';
+      var fnOwn=clean(r.prog)+'/'+clean(r.sal||v.sal||''),fnDm=clean(v.agn)+'/'+clean(v.ags);
       if(v.trn&&!fnRecipient.includes(clean(v.trn)))fnRecipient+=(fnRecipient?' - ':'')+'treno '+clean(v.trn);
       // Il numero 01 è già stampato sul modello: viene sostituito dal numero corrente.
       erase(440,24,68,18);put('N° '+r.prog+'/'+(r.sal||v.sal||''),[443,38,63],'Numero modulo',8);
       erase(13,75,80,12);put(v.sta,[14,85,77],'Località',7.5);
       erase(94,75,105,12);put(v.dat,[95,85,103],'Data',7.5);
-      erase(276,57,62,12);put(clean(v.agn)+'/'+clean(v.ags),[278,67,58],'Numero trasmittente',7.5);
+      erase(276,57,62,12);put(fnSend?fnOwn:fnDm,[278,67,58],'Numero trasmittente',7.5);
       erase(346,75,53,12);put(v.ora,[347,85,50],'Ora trasmissione',7.5);
       var fnOrder=r.scelta&&r.scelta.oa||'Si ordina';
       if(fnOrder==='Si ordina')line(58,106,104);else line(14,50,104);
@@ -120,12 +122,22 @@
         fnLines.push('Segue nel foglio allegato '+add('Testo del dispaccio - continuazione',fnRest.join('\n')));
       }
       fnLines.forEach(function(s,i){text(s,15,124+i*9.5,9,font);});
-      if(v.ord){erase(27,300,96,11);put(v.ord,[28,310,93],'Agente che dà l’ordine',7.5);}
-      if(v.agt){erase(150,300,96,11);put(v.agt,[151,310,93],'Agente trasmittente',7.5);}
-      // Nei vecchi record il campo adc era precompilato dal profilo senza conferma del ruolo.
-      if(v.adc&&/^v3\b/.test(r.versioneModello||'')){erase(274,300,96,11);put(v.adc,[275,310,91],'Agente ricevente',7.5);}
-      if(v.ricevProg){erase(84,326,24,11);put(v.ricevProg,[85,335,22],'Progressivo ricevente',7.5);}
-      if(v.ricevSal){erase(115,326,24,11);put(v.ricevSal,[116,335,22],'Saltuario ricevente',7.5);}
+      if(fnNew){
+        if(v.agt){
+          if(fnSend){erase(274,300,96,11);put(v.agt,[275,310,91],'DM/DCO ricevente',7.5);}
+          else{erase(150,300,96,11);put(v.agt,[151,310,93],'DM/DCO trasmittente',7.5);}
+        }
+        var fnOther=fnSend?fnDm:fnOwn;
+        erase(84,326,24,11);put(fnOther.split('/')[0],[85,335,22],'Progressivo ricevente',7.5);
+        erase(115,326,24,11);put(fnOther.split('/')[1],[116,335,22],'Saltuario ricevente',7.5);
+      }else{
+        if(v.ord){erase(27,300,96,11);put(v.ord,[28,310,93],'Agente che dà l’ordine',7.5);}
+        if(v.agt){erase(150,300,96,11);put(v.agt,[151,310,93],'Agente trasmittente',7.5);}
+        // Nei vecchi record il campo adc era precompilato dal profilo senza conferma del ruolo.
+        if(v.adc&&/^v3\b/.test(r.versioneModello||'')){erase(274,300,96,11);put(v.adc,[275,310,91],'Agente ricevente',7.5);}
+        if(v.ricevProg){erase(84,326,24,11);put(v.ricevProg,[85,335,22],'Progressivo ricevente',7.5);}
+        if(v.ricevSal){erase(115,326,24,11);put(v.ricevSal,[116,335,22],'Saltuario ricevente',7.5);}
+      }
     }else if(cfg.kind==='libero'){
       var normal=r.moduloId==='m40_normale',oa=r.scelta&&r.scelta.oa||(/SI D[AÀ] AVVISO/i.test(r.riepilogo||'')?'Si dà avviso':'Si ordina');
       // Copertura dei numeri già impressi sulle scansioni, entro il solo riquadro numerico.

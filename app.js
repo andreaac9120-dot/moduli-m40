@@ -1,6 +1,6 @@
 'use strict';
 /* App Moduli M.40 — funziona offline; tutti i dati restano sul telefono (localStorage). */
-var APP_VERSIONE = '1.15.1-ruoli-0229';
+var APP_VERSIONE = '1.16.0-numeri-0229';
 var K_CNT = 'm40.contatori', K_ARC = 'm40.archivio', K_DRAFT = 'm40.bozza', K_EXP = 'm40.ultimaEsportazione', K_TRASH = 'm40.cestino', K_DELID = 'm40.eliminati', K_ADC = 'm40.cognomeAdc', K_PROFILO = 'm40.profilo', K_TEMA = 'm40.tema', K_RETE = 'm40.rete';
 
 var LS = {
@@ -188,6 +188,7 @@ function vistaForm() {
   var now = new Date(), dateAdded = false;
   if (!d.v.dat) { d.v.dat = dataCorrente(now); dateAdded = true; }
   if (!d.v.ora) { d.v.ora = oraCorrente(now); dateAdded = true; }
+  if (m.id === 'fn_0229' && !d.scelta.direzione) { d.scelta.direzione = 'ricevo'; dateAdded = true; }
   if (dateAdded) LS.set(K_DRAFT, d);
   var h = '<header class="formtop"><div class="riga1"><button class="link" id="indietro">‹ Moduli</button><div style="display:flex;gap:8px;align-items:center">' + temaBtn() + '<span class="num">N. ' + d.prog + '</span></div></div>' +
     '<h1>' + esc(m.nome) + '</h1><div class="sub">' + esc(m.rete || 'RFI') + ' · Captrain · modello ' + esc(m.versione) + '</div>' +
@@ -202,12 +203,12 @@ function vistaForm() {
     }
     return '<div' + (c.span === 2 ? ' class="s2"' : '') + '><label>' + esc(c.label) + '</label><input data-f="' + c.id + '"' + (c.ph ? ' placeholder="' + esc(c.ph) + '"' : '') + (c.id === 'ora' || c.id === 'dat' || c.id === 'trn' ? ' inputmode="numeric"' : '') + '></div>';
   }
-  var trasm = ['agt', 'adc', 'ord', 'ricevProg', 'ricevSal'];
+  var trasm = ['agt', 'adc'];
   var cDati = m.campi.filter(function (c) { return c.tipo !== 'ag' && trasm.indexOf(c.id) < 0; });
   var cTras = m.campi.filter(function (c) { return c.tipo === 'ag' || trasm.indexOf(c.id) >= 0; });
-  if (!m.campi.some(function (c) { return c.id === 'adc'; })) cTras.push({id:'adc',label:M40Pdf.hasGuardColumn(m.id) ? 'Cognome agente ricevente (proposto dal profilo)' : 'Cognome AdC (proposto dal profilo)',span:2});
+  if (m.id !== 'fn_0229' && !m.campi.some(function (c) { return c.id === 'adc'; })) cTras.push({id:'adc',label:M40Pdf.hasGuardColumn(m.id) ? 'Cognome agente ricevente (proposto dal profilo)' : 'Cognome AdC (proposto dal profilo)',span:2});
   h += '<section class="sez"><div class="sez-t"><span class="l"><span class="ic">▣</span>Dati treno</span><span class="tag' + (m.rete === 'FERROVIENORD' ? ' fn' : '') + '">' + esc(m.rete || 'RFI') + '</span></div><div class="griglia">' + cDati.map(campo).join('') + '</div></section>';
-  h += '<section class="sez"><div class="sez-t"><span class="l"><span class="ic">⇄</span>Trasmissione</span></div><div class="griglia">' + cTras.map(campo).join('') + '</div>' + (m.id === 'fn_0229' ? '<p class="nota">Indica manualmente chi dà l’ordine, chi trasmette e chi riceve. Lascia vuoti i riquadri non ancora compilati. Il profilo personale non viene inserito in automatico.</p>' : '') + '</section>';
+  h += '<section class="sez"><div class="sez-t"><span class="l"><span class="ic">⇄</span>Trasmissione</span></div>' + (m.id === 'fn_0229' ? '<div class="scelte"><label><input type="radio" name="direzione" data-sc="direzione" value="ricevo"> Ricevo dal DM/DCO</label><label><input type="radio" name="direzione" data-sc="direzione" value="invio"> Invio al DM/DCO</label></div>' : '') + '<div class="griglia">' + cTras.map(campo).join('') + '</div>' + (m.id === 'fn_0229' ? '<p class="nota">Inserisci il tuo numero nel campo «Progressivo / saltuario (mio)» e quello del DM/DCO qui sotto. La scelta indica chi trasmette; nessuna firma viene aggiunta automaticamente.</p>' : '') + '</section>';
   if (m.tipo === 'libero') {
     h += '<section class="sez"><div class="sez-t"><span class="l"><span class="ic">✎</span>Testo del dispaccio</span></div>' +
       '<div class="scelte oa">' + ['Si ordina', 'Si dà avviso'].map(function (s) { return '<label><input type="radio" name="scoa" data-sc="oa" value="' + s + '"> ' + s + '</label>'; }).join('') + '</div>' +
@@ -355,12 +356,13 @@ function numeriPrescrizioni(m, checks) { return checks.filter(function (n) { ret
 function controlla(m, d) {
   var e = [], v = d.v;
   if (!/^\d{2}$/.test(v.sal || '')) e.push('Numero saltuario (2 cifre) mancante');
-  if (!(v.agn || '').trim() || !/^\d{2}$/.test(v.ags || '')) e.push(m.id === 'fn_0229' ? 'N° agente trasmittente (progressivo/saltuario 2 cifre) mancante' : m.tipo === 'libero' ? 'N° DCO/DM (progressivo/saltuario 2 cifre) mancante' : 'N° DM/DCO trasmittente (progressivo/saltuario 2 cifre) mancante');
+  if (!(v.agn || '').trim() || !/^\d{2}$/.test(v.ags || '')) e.push(m.id === 'fn_0229' ? 'N° DM/DCO (progressivo/saltuario 2 cifre) mancante' : m.tipo === 'libero' ? 'N° DCO/DM (progressivo/saltuario 2 cifre) mancante' : 'N° DM/DCO trasmittente (progressivo/saltuario 2 cifre) mancante');
   if (m.tipo === 'libero') {
     if (!d.scelta.oa) e.push('Scegli «Si ordina» o «Si dà avviso»');
     if (!(v.dest || '').trim()) e.push('Destinatario mancante');
     if (!(v.testo || '').trim()) e.push('Testo del dispaccio mancante');
-    if (!(v.agt || '').trim()) e.push(m.id === 'fn_0229' ? 'Agente trasmittente mancante' : 'Cognome DCO/DM mancante');
+    if (!(v.agt || '').trim()) e.push(m.id === 'fn_0229' ? 'Cognome DM/DCO mancante' : 'Cognome DCO/DM mancante');
+    if (m.id === 'fn_0229' && !['ricevo', 'invio'].includes(d.scelta.direzione)) e.push('Scegli chi trasmette il dispaccio');
     if (m.id !== 'fn_0229' && !(v.adc || '').trim()) e.push('Cognome AdC mancante');
     return e;
   }
@@ -425,17 +427,15 @@ function riepilogoHtml(m, d) {
   function section(title, content) { sections.push('<section class="lettura-blocco" data-read-step tabindex="-1"><h3>' + esc(title) + '</h3>' + content + '</section>'); }
   var dati = dato('Progressivo del modulo', d.prog) + dato('Saltuario del modulo', v.sal);
   m.campi.forEach(function (c) {
-    if (!c.tipo && ['agt', 'adc', 'ora', 'ord', 'ricevProg', 'ricevSal'].indexOf(c.id) < 0) dati += dato(c.label, v[c.id]);
+    if (!c.tipo && ['agt', 'adc', 'ora'].indexOf(c.id) < 0) dati += dato(c.label, v[c.id]);
   });
   if (M40Pdf.hasGuardColumn(m.id) && d.compilatoreAG === true) dati += dato('Colonna delle prescrizioni da barrare', 'A.G. (destra)');
   section('Identificazione del modulo', '<dl class="lettura-dati">' + dati + '</dl>');
-  var trasmissione = dato('Ora di trasmissione', v.ora) + dato(m.id === 'fn_0229' ? 'Agente trasmittente' : m.tipo === 'libero' ? 'DCO / DM' : 'Agente trasmittente', v.agt) +
-    dato(m.id === 'fn_0229' ? 'Progressivo agente trasmittente' : M40Pdf.hasGuardColumn(m.id) && d.compilatoreAG === true ? 'Progressivo A.G.' : 'Progressivo DCO / DM', v.agn) + dato(m.id === 'fn_0229' ? 'Saltuario agente trasmittente' : M40Pdf.hasGuardColumn(m.id) && d.compilatoreAG === true ? 'Saltuario A.G.' : 'Saltuario DCO / DM', v.ags) +
+  var trasmissione = dato('Ora di trasmissione', v.ora) + dato(m.id === 'fn_0229' ? 'DM / DCO' : m.tipo === 'libero' ? 'DCO / DM' : 'Agente trasmittente', v.agt) +
+    dato(m.id === 'fn_0229' ? 'Progressivo DM / DCO' : M40Pdf.hasGuardColumn(m.id) && d.compilatoreAG === true ? 'Progressivo A.G.' : 'Progressivo DCO / DM', v.agn) + dato(m.id === 'fn_0229' ? 'Saltuario DM / DCO' : M40Pdf.hasGuardColumn(m.id) && d.compilatoreAG === true ? 'Saltuario A.G.' : 'Saltuario DCO / DM', v.ags) +
     (m.id === 'fn_0229' ? '' : dato(M40Pdf.hasGuardColumn(m.id) ? 'Cognome agente ricevente' : 'Cognome AdC', v.adc));
   if (m.id === 'fn_0229') {
-    if (v.ord) trasmissione += dato('Agente che dà l’ordine o l’avviso', v.ord);
-    if (v.adc) trasmissione += dato('Agente ricevente', v.adc);
-    if (v.ricevProg || v.ricevSal) trasmissione += dato('Numero comunicato dal ricevente', (v.ricevProg || '…') + '/' + (v.ricevSal || '…'));
+    trasmissione = dato('Chi trasmette', d.scelta.direzione === 'invio' ? 'Io invio al DM/DCO' : 'Ricevo dal DM/DCO') + dato('Mio progressivo / saltuario', d.prog + '/' + v.sal) + trasmissione;
   }
   section('Dati di trasmissione', '<dl class="lettura-dati">' + trasmissione + '</dl>');
   if (m.tipo === 'libero' && m.id !== 'fn_0229' && d.firmatario && profiloCompleto(d.firmatario)) section('Firma nel modulo', '<dl class="lettura-dati">' + dato('Nome e cognome', d.firmatario.nome + ' ' + d.firmatario.cognome) + dato('Matricola', d.firmatario.matricola) + '</dl>');
@@ -486,12 +486,10 @@ function riepilogo(m, d, confermato) {
   var v = d.v, M = function (x) { return (x || '').trim() || '[MANCANTE]'; }, L = [];
   L.push('RIEPILOGO PER COLLAZIONAMENTO (non è la trascrizione integrale)');
   L.push(m.nome + ' N. ' + d.prog + '/' + M(v.sal) + '  ·  modello ' + m.versione);
-  m.campi.forEach(function (c) {
-    if (!c.tipo && (m.id !== 'fn_0229' || ['ord', 'adc', 'ricevProg', 'ricevSal'].indexOf(c.id) < 0 || (v[c.id] || '').trim()))
-      L.push(c.label + ': ' + M(v[c.id]));
-  });
+  m.campi.forEach(function (c) { if (!c.tipo) L.push(c.label + ': ' + M(v[c.id])); });
   if (m.tipo === 'libero') {
-    L.push((m.id === 'fn_0229' ? 'N° agente trasmittente: ' : 'N° DCO/DM: ') + M(v.agn) + '/' + M(v.ags));
+    if (m.id === 'fn_0229') L.push('Trasmissione: ' + (d.scelta.direzione === 'invio' ? 'io invio al DM/DCO' : 'ricevo dal DM/DCO'));
+    L.push((m.id === 'fn_0229' ? 'N° DM/DCO: ' : 'N° DCO/DM: ') + M(v.agn) + '/' + M(v.ags));
     L.push('');
     L.push((d.scelta.oa ? d.scelta.oa.toUpperCase() : '[SI ORDINA / SI DÀ AVVISO MANCANTE]') + ' ' + (m.destLabel || 'a') + ' ' + M(v.dest) + ':');
     L.push(M(v.testo));
