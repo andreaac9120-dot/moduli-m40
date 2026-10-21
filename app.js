@@ -1,6 +1,6 @@
 'use strict';
 /* App Moduli M.40 — funziona offline; tutti i dati restano sul telefono (localStorage). */
-var APP_VERSIONE = '1.16.0-numeri-0229';
+var APP_VERSIONE = '1.16.1-stabilita';
 var K_CNT = 'm40.contatori', K_ARC = 'm40.archivio', K_DRAFT = 'm40.bozza', K_EXP = 'm40.ultimaEsportazione', K_TRASH = 'm40.cestino', K_DELID = 'm40.eliminati', K_ADC = 'm40.cognomeAdc', K_PROFILO = 'm40.profilo', K_TEMA = 'm40.tema', K_RETE = 'm40.rete';
 
 var LS = {
@@ -89,14 +89,14 @@ function mostra(st) {
 /* ---------- contatori ---------- */
 function contatori() { return LS.get(K_CNT, {}); }
 function prossimo(id) { var c = contatori(); return c[id] || null; }
-function impostaProssimo(id, n) { var c = contatori(); c[id] = n; LS.set(K_CNT, c); }
+function impostaProssimo(id, n) { var c = contatori(); c[id] = n; return LS.set(K_CNT, c); }
 function chiediProgressivo(m, attuale) {
   return chiediTesto('Numero progressivo per ' + m.nome + (attuale ? '\n(attuale: N. ' + attuale + ')' : '') + '\nInserisci il numero da usare per il prossimo modulo:', attuale || '1', 'numeric').then(function (r) {
     if (r === null) return null;
-    var n = parseInt(String(r).trim(), 10);
-    if (!(n >= 1)) { avviso('Numero non valido.'); return null; }
-    if (!attuale) { impostaProssimo(m.id, n); return n; }
-    return conferma('Confermi? Il prossimo ' + m.nome + ' sarà il N. ' + n + '.').then(function (ok) { if (!ok) return null; impostaProssimo(m.id, n); return n; });
+    var n = Number(String(r).trim());
+    if (!Number.isSafeInteger(n) || n < 1) { avviso('Numero non valido.'); return null; }
+    if (!attuale) return impostaProssimo(m.id, n) ? n : null;
+    return conferma('Confermi? Il prossimo ' + m.nome + ' sarà il N. ' + n + '.').then(function (ok) { if (!ok) return null; return impostaProssimo(m.id, n) ? n : null; });
   });
 }
 
@@ -172,8 +172,7 @@ function nuovaCompilazione(m) {
     (p ? Promise.resolve(p) : chiediProgressivo(m, null)).then(function (p) {
       if (!p) return;
       var profilo = LS.get(K_PROFILO, null), now = new Date(), v0 = {adc: m.id === 'fn_0229' ? '' : (profiloCompleto(profilo) ? profilo.cognome : LS.get(K_ADC, '')), dat: dataCorrente(now), ora: oraCorrente(now)};
-      LS.set(K_DRAFT, {moduloId: m.id, prog: p, v: v0, pv: {}, checks: [], scelta: {}, compilatoreAG: false, firmatario: m.id === 'fn_0229' ? null : (profiloCompleto(profilo) ? profilo : null), libera: m.tipo === 'libero' ? false : null, liberaTesto: '', creato: new Date().toISOString()});
-      vai('form');
+      if (LS.set(K_DRAFT, {uid: uid(), moduloId: m.id, prog: p, v: v0, pv: {}, checks: [], scelta: {}, compilatoreAG: false, firmatario: m.id === 'fn_0229' ? null : (profiloCompleto(profilo) ? profilo : null), libera: m.tipo === 'libero' ? false : null, liberaTesto: '', creato: new Date().toISOString()})) vai('form');
     });
   }
   if (!b) { avvia(); return; }
@@ -267,7 +266,7 @@ function vistaForm() {
     d.scelta = {}; $$('[data-sc]').forEach(function (r) { if (r.checked) d.scelta[r.dataset.sc] = r.value; });
     d.compilatoreAG = !!($('#compilatoreAG') && $('#compilatoreAG').checked);
     d.liberaTesto = $('#free').value;
-    LS.set(K_DRAFT, d);
+    return LS.set(K_DRAFT, d);
   }
   function aggiornaDerivati() {
     var trn = $('[data-f="trn"]'); $$('[data-mirror="trn"]').forEach(function (i) { i.value = trn ? trn.value : ''; });
@@ -314,7 +313,7 @@ function vistaForm() {
   $('#yno').onclick = function () { impostaLibera(false); };
   if ($('#rst')) $('#rst').onclick = function () { conferma('Deselezionare tutte le caselle?', 'Deseleziona').then(function (ok) { if (ok) { $$('[data-c]').forEach(function (c) { c.checked = false; }); aggiornaDerivati(); salva(); aggiornaStato(); invalidaRiepilogo(); } }); };
   $('#gen').onclick = function () {
-    salva(); var e = controlla(m, d);
+    if (!salva()) return; var e = controlla(m, d);
     $('#err').textContent = e.join(' · ');
     var o = $('#out'); o.hidden = false; o.innerHTML = riepilogoHtml(m, d);
     attivaLettura(o);
@@ -327,7 +326,7 @@ function vistaForm() {
     $('#sezRiep').scrollIntoView({behavior: 'smooth', block: 'start'});
   };
   if ($('#pdfBozza')) $('#pdfBozza').onclick = function () {
-    salva(); var e = controlla(m, d);
+    if (!salva()) return; var e = controlla(m, d);
     if (e.length) { $('#err').textContent = 'Prima di generare il PDF completa: ' + e.join(' · '); return; }
     scaricaPdf({moduloId:m.id,nome:m.nome,versioneModello:m.versione,prog:d.prog,sal:d.v.sal,campi:d.v,
       presc:prescSelezionate(m,d),libera:d.libera === true ? d.liberaTesto : null,
@@ -336,14 +335,14 @@ function vistaForm() {
   if ($('#vediRetro')) $('#vediRetro').onclick = function () { consultaRetro(m.id); };
   $('#cfb').onclick = function () {
     if (!riepilogoPronto) return;
-    salva(); var e = controlla(m, d);
+    if (!salva()) return; var e = controlla(m, d);
     if (e.length) { $('#err').textContent = 'Prima di confermare completa: ' + e.join(' · '); return; }
     $('#err').textContent = ''; $('#cfq').hidden = false;
   };
   $('#cfn').onclick = function () { $('#cfq').hidden = true; };
   $('#cfy').onclick = function () {
     if (!riepilogoPronto) return;
-    salva(); var e = controlla(m, d);
+    if (!salva()) return; var e = controlla(m, d);
     if (e.length) { $('#err').textContent = 'Prima di confermare completa: ' + e.join(' · '); $('#cfq').hidden = true; return; }
     var rec = registra(m, d);
     if (rec) vai('record', rec.uid, true);
@@ -520,18 +519,21 @@ function riepilogo(m, d, confermato) {
 /* ---------- conferma e archivio ---------- */
 function registra(m, d) {
   var adesso = new Date(), quando = adesso.toLocaleString('it-IT');
+  // La stessa bozza mantiene l'identificatore anche se il contatore non si salva.
+  if (!d.uid) { d.uid = uid(); if (!LS.set(K_DRAFT, d)) return null; }
   var rec = {
-    uid: uid(), moduloId: m.id, nome: m.nome, versioneModello: m.versione, appVersione: APP_VERSIONE,
+    uid: d.uid, moduloId: m.id, nome: m.nome, versioneModello: m.versione, appVersione: APP_VERSIONE,
     prog: d.prog, sal: d.v.sal, campi: d.v, presc: prescSelezionate(m, d), scelta: d.scelta, pv: d.pv, compilatoreAG: d.compilatoreAG === true, firmatario: d.firmatario || null,
     libera: d.libera === true ? d.liberaTesto : null, stato: 'collazionato/confermato',
     confermato: quando, confermatoISO: adesso.toISOString(), riepilogo: riepilogo(m, d, quando)
   };
-  var arc = LS.get(K_ARC, []); arc.push(rec);
-  if (!LS.set(K_ARC, arc)) return null;
+  var arc = LS.get(K_ARC, []), existing = arc.filter(function (r) { return r.uid === d.uid; })[0];
+  if (!existing) { arc.push(rec); if (!LS.set(K_ARC, arc)) return null; }
+  var c = contatori(); c[m.id] = Math.max(c[m.id] || 0, d.prog + 1);
+  if (!LS.set(K_CNT, c)) return null;
   if (m.id !== 'fn_0229' && (d.v.adc || '').trim()) LS.set(K_ADC, d.v.adc.trim());
-  var c = contatori(); c[m.id] = Math.max(c[m.id] || 0, d.prog + 1); LS.set(K_CNT, c);
   LS.del(K_DRAFT);
-  return rec;
+  return existing || rec;
 }
 /* ---------- stato esportazione, cestino ---------- */
 function esportato(r) { if (r.esportato) return true; var e = LS.get(K_EXP, null); return !!(e && r.confermatoISO <= e); }
@@ -788,18 +790,34 @@ function importa(file) {
   fr.onload = function () {
     var dati; try { dati = JSON.parse(fr.result); } catch (e) { avviso('File non valido.'); return; }
     if (!dati || dati.app !== 'moduli-m40' || !Array.isArray(dati.archivio)) { avviso('Questo file non è un archivio dei Moduli M.40.'); return; }
-    var arc = LS.get(K_ARC, []), noti = {}, eliminati = {};
+    var arc = LS.get(K_ARC, []), noti = Object.create(null), eliminati = Object.create(null);
     arc.forEach(function (r) { noti[r.uid] = 1; });
     LS.get(K_TRASH, []).forEach(function (t) { eliminati[t.rec.uid] = 1; });
     LS.get(K_DELID, []).forEach(function (u) { eliminati[u] = 1; });
-    var validi = dati.archivio.filter(function (r) { return r && r.uid; });
+    var validi = dati.archivio.filter(function (r) {
+      return r && typeof r.uid === 'string' && r.uid.length > 0 && typeof r.moduloId === 'string' && mod(r.moduloId) &&
+        Number.isSafeInteger(r.prog) && r.prog > 0 && r.prog < Number.MAX_SAFE_INTEGER &&
+        typeof r.nome === 'string' && typeof r.sal === 'string' && r.campi && !Array.isArray(r.campi) &&
+        typeof r.campi === 'object' && Array.isArray(r.presc) && typeof r.riepilogo === 'string' &&
+        typeof r.confermato === 'string' && typeof r.confermatoISO === 'string';
+    });
+    if (validi.length !== dati.archivio.length) { avviso('Il file contiene moduli incompleti o non validi: importazione annullata.'); return; }
+    var nelFile = Object.create(null);
+    validi = validi.filter(function (r) { if (nelFile[r.uid]) return false; nelFile[r.uid] = true; return true; });
     var nuovi = validi.filter(function (r) { return !noti[r.uid] && !eliminati[r.uid]; });
     var elim = validi.filter(function (r) { return !noti[r.uid] && eliminati[r.uid]; });
     var nPres = validi.length - nuovi.length - elim.length;
+    function salvaContatoriImport() {
+      var c = contatori(), ci = dati.contatori || {};
+      Object.keys(ci).forEach(function (k) { var n = Number(ci[k]); if (mod(k) && Number.isSafeInteger(n) && n > (c[k] || 0)) c[k] = n; });
+      validi.forEach(function (r) { c[r.moduloId] = Math.max(c[r.moduloId] || 0, r.prog + 1); });
+      return LS.set(K_CNT, c);
+    }
     var elenco = elim.slice(0, 5).map(function (r) { return '• ' + descr(r); }).join('\n') + (elim.length > 5 ? '\n… e altri ' + (elim.length - 5) : '');
     (elim.length ? finestra({testo: 'Il file contiene ' + elim.length + (elim.length === 1 ? ' modulo che avevi eliminato' : ' moduli che avevi eliminato') + ':\n' + elenco + '\n\nVuoi reimportare anche ' + (elim.length === 1 ? 'questo modulo?' : 'questi moduli?'), ok: 'Sì, reimporta', annulla: 'No'}) : Promise.resolve(false)).then(function (anche) {
       var daImp = anche ? nuovi.concat(elim) : nuovi;
       if (!daImp.length) {
+        if (!salvaContatoriImport()) return;
         avviso('Nessun modulo da importare: ' + nPres + ' già presenti nell\'archivio' + (elim.length ? ', ' + elim.length + ' eliminati in precedenza (non reimportati)' : '') + '.');
         return;
       }
@@ -809,15 +827,13 @@ function importa(file) {
       return conferma(testo, 'Importa').then(function (ok) {
         if (!ok) return;
         daImp.forEach(function (r) { if (!r.esportato) r.esportato = dati.esportato || new Date().toISOString(); });
+        if (!salvaContatoriImport()) return;
+        if (!LS.set(K_ARC, arc.concat(daImp))) return;
         if (anche && elim.length) {
-          var via = {}; elim.forEach(function (r) { via[r.uid] = 1; });
+          var via = Object.create(null); elim.forEach(function (r) { via[r.uid] = 1; });
           LS.set(K_TRASH, LS.get(K_TRASH, []).filter(function (t) { return !via[t.rec.uid]; }));
           LS.set(K_DELID, LS.get(K_DELID, []).filter(function (u) { return !via[u]; }));
         }
-        LS.set(K_ARC, arc.concat(daImp));
-        var c = contatori(), ci = dati.contatori || {};
-        Object.keys(ci).forEach(function (k) { if (+ci[k] > (c[k] || 0)) c[k] = +ci[k]; });
-        LS.set(K_CNT, c);
         avviso('Importazione completata: ' + daImp.length + (daImp.length === 1 ? ' modulo aggiunto.' : ' moduli aggiunti.')); vistaArchivio();
       });
     });

@@ -29,14 +29,25 @@ App per compilare i moduli M.40 (D.L. B.A., D.L. B.m./B.ca., TELEC BA, TELEC Bca
 
 - **RFI / FERROVIENORD**: in alto nella schermata principale scegli la rete; vedi solo i suoi moduli. L'app ricorda l'ultima scelta.
 - **☾ Notte / ☀ Giorno**: cambia il tema (chiaro ad alto contrasto di giorno, scuro di notte). La scelta resta memorizzata.
+- **⋮ → Impostazioni**: salva nome, cognome e matricola. Nei nuovi moduli D.L. il cognome viene proposto come Agente ricevente; negli altri moduli come AdC, escluso il 0229 FERROVIENORD. Nei moduli liberi RFI il PDF riporta nome, cognome e matricola in basso. Nel 0229 FERROVIENORD scegli chi trasmette; il profilo non firma automaticamente. Ogni modulo confermato conserva i dati personali usati al momento della compilazione.
 - **Compila**: scegli il modulo. La prima volta l'app chiede da che numero partire.
+- Quando inizi un nuovo modulo, data e ora sono compilate con i valori locali correnti. Le frecce accanto alla data cambiano un giorno per tocco; quelle accanto all'ora cambiano un minuto per tocco, aggiornando anche la data quando si supera la mezzanotte. Puoi sempre scrivere i valori direttamente.
 - Il modulo è diviso in sezioni (Dati treno, Trasmissione, Ordine, Prescrizioni, Prescrizione libera, Riepilogo). In alto vedi sempre quante prescrizioni hai selezionato e quanti dati mancano.
 - Le prescrizioni selezionate diventano **gialle**. Se scrivi in un campo di una prescrizione, la casella si spunta da sola.
+- Il numero del treno e l'elenco crescente dei numeri delle prescrizioni selezionate vengono inseriti automaticamente nelle rispettive righe prestampate dei moduli numerati, compreso il 0229/2 FERROVIENORD. L'elenco viene aggiornato anche nel riepilogo.
+- Nei due moduli **M.40 D.L.**, il cognome del profilo viene inserito nel campo **Agente ricevente** in basso. Le prescrizioni selezionate vengono barrate nel PDF solo nella colonna **DM a sinistra**. Se il modulo è compilato da un Agente di Guardia, attiva **Compilato da A.G.** accanto alla domanda sulla prescrizione libera: verrà barrata solo la colonna **A.G. a destra**. La scelta appare nel riepilogo e resta salvata nel modulo.
 - Dove il modello dice di depennare una dizione (**binario di sinistra / destra**, **itinerario di arrivo / partenza**, **s.b. / d.b.**) tocchi l'opzione giusta: nel riepilogo resta solo quella. Se la prescrizione è selezionata e manca la scelta, il modulo non si può confermare.
 - Il modulo in compilazione si **salva da solo** a ogni modifica: se l'app si chiude, alla riapertura riprendi da dove eri.
 - **Genera riepilogo** → **Conferma definitivamente**: il modulo va nell'**archivio**, bloccato in sola lettura, e il progressivo di quel modulo avanza di 1.
+- Il riepilogo è suddiviso in identificazione, trasmissione, ordine e singole prescrizioni. I dati inseriti sono evidenziati. **Lettura guidata** mostra una sezione alla volta con **Precedente / Successivo**; **Testo più grande** aumenta la dimensione delle frasi. **Torna ai dati** riporta alla compilazione.
+- Se modifichi un dato dopo la generazione, il riepilogo viene nascosto e va rigenerato prima della conferma, così leggi sempre i valori aggiornati.
+- La colonna DM a sinistra è la scelta normale e non occupa una voce nel riepilogo finale. Solo se selezioni il flag A.G. il riepilogo indica la colonna destra.
+- Dopo aver completato i dati puoi scaricare un'**anteprima PDF** del modulo originale compilato. Dalla scheda del modulo confermato puoi scaricare o condividere il PDF, anche con Drive. La copia PDF usa i modelli originali forniti e contiene solo il fronte del modello scelto; se un testo non entra nello spazio stampato, viene aggiunta una pagina di seguito con il testo integrale.
+- Nei moduli con retro, il PDF compilato contiene solo il fronte. **Consulta il retro**, accanto al pulsante dell'anteprima e nella scheda del modulo confermato, apre il retro originale separatamente.
+- Nei nuovi moduli i valori delle prescrizioni sono conservati separatamente e inseriti negli spazi prestampati. Per i moduli salvati con le versioni precedenti, che conservano solo la frase completa, il PDF riporta la frase salvata nella relativa riga. I dati troppo lunghi per uno spazio sono richiamati con un riferimento al seguito, senza tagliarli.
+- I PDF sono disponibili per tutti gli otto modelli: sei RFI e due FERROVIENORD. Il retro guida del 0229/2 si consulta separatamente.
 - **Imposta N.**: cambia il progressivo di un singolo modulo (solo quando lo decidi tu).
-- **Archivio**: cerca e riapri i moduli confermati; puoi scaricarli come testo o condividerli.
+- **Archivio**: cerca e riapri i moduli confermati; puoi scaricarli come testo o come PDF compilato.
   - Ricerca per **N° treno**, per **data** (del modulo o della conferma) e nel testo; filtro esportati / non esportati.
   - **✕** accanto ai moduli non ancora esportati: li elimina (con conferma).
   - **Elimina tutti i non esportati**, in fondo alla lista.
@@ -54,9 +65,9 @@ App per compilare i moduli M.40 (D.L. B.A., D.L. B.m./B.ca., TELEC BA, TELEC Bca
 
 Ogni modulo ha il **suo progressivo**, indipendente dagli altri.
 
-**Moduli con prescrizioni numerate da barrare** (M.40 D.L., M.40 TELEC, 0229/2): sono sempre trasmessi dal DCO/DM all'AdC.
+**Moduli con prescrizioni numerate da barrare** (M.40 D.L., M.40 TELEC, 0229/2): nei due M.40 D.L. puoi indicare con il flag se la compilazione è effettuata dal DM oppure dall'A.G.; il PDF barra la rispettiva colonna.
 
-**Moduli a testo libero** (M.40 normale, M.40 a, 0229): il dispaccio può andare in entrambe le direzioni, dal DCO/DM all'AdC o dall'AdC al DCO/DM. Scegli «Si ordina» o «Si dà avviso», scrivi il destinatario e il testo. Ci sono i campi progressivo/saltuario (tuo e del DCO/DM), ora, cognome DCO/DM e cognome AdC. Il cognome AdC viene ricordato e proposto automaticamente nei moduli successivi.
+**Moduli a testo libero** (M.40 normale, M.40 a, 0229): il dispaccio può andare in entrambe le direzioni. Scegli «Si ordina» o «Si dà avviso», scrivi il destinatario e il testo. Nei due M.40 RFI il cognome AdC viene ricordato e proposto automaticamente. Nel 0229 FERROVIENORD inserisci solo il tuo progressivo/saltuario e quello del DM/DCO, poi scegli se ricevi o invii: il PDF colloca i due numeri nei campi corretti senza chiedere un terzo numero.
 
 ## 4. Copia di sicurezza (importante)
 
@@ -65,13 +76,13 @@ L'archivio vive nel telefono. Se cancelli i dati di Chrome, disinstalli l'app o 
 - **Salva su Drive** (Archivio): si apre il menu di condivisione di Android → scegli **Drive** → scegli la cartella (es. «Moduli M.40») → **Salva**. Il file è `.txt` (Chrome non condivide i `.json`) ma il contenuto è lo stesso. Senza linea l'app Drive lo carica appena torna la connessione.
 - **Esporta archivio**: salva il file `.json` nella cartella Download del telefono.
 - Per recuperarlo: **Archivio → Importa** e scegli il file (`.json` o `.txt`). I moduli già presenti non vengono duplicati.
-- Dalla scheda di un modulo, **Salva su Drive** salva solo quel modulo come testo.
+- Dalla scheda di ciascun modulo, **Condividi PDF / Drive** condivide il modulo compilato.
 
 La schermata principale ti avvisa se ci sono moduli non ancora salvati.
 
 ## 5. Aggiornare l'app (nuovi moduli o prescrizioni cambiate)
 
-1. I file aggiornati te li prepara Claude, partendo dal nuovo modello ufficiale.
+1. Prepara i file aggiornati partendo dal nuovo modello ufficiale.
 2. Nel repository: **Add file** → **Upload files**, carica i file nuovi (sostituiscono i vecchi) → **Commit changes**.
 3. Alla prima apertura con la linea l'app scarica la nuova versione e mostra **«Nuova versione disponibile → Aggiorna»**.
 

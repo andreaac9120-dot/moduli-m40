@@ -1,6 +1,6 @@
 /* Funzionamento offline. A ogni aggiornamento dell'app aumentare VERSIONE.
    I file vengono sempre scaricati freschi dal server (cache: 'reload'), non dalla memoria temporanea del browser. */
-var VERSIONE = 'm40-v1.16.0-numeri-0229';
+var VERSIONE = 'm40-v1.16.1-stabilita';
 var FILE = ['./', 'index.html', 'style.css', 'moduli.js', 'app.js', 'pdf-export.js', 'vendor/pdf-lib.min.js', 'assets/moduli-originali.pdf', 'assets/moduli-ferrovienord.pdf', 'manifest.webmanifest', 'icon.svg', 'icon-192.png', 'icon-512.png'];
 
 self.addEventListener('install', function (e) {
@@ -8,16 +8,15 @@ self.addEventListener('install', function (e) {
 });
 self.addEventListener('activate', function (e) {
   e.waitUntil(caches.keys().then(function (k) {
-    return Promise.all(k.filter(function (n) { return n !== VERSIONE; }).map(function (n) { return caches.delete(n); }));
+    return Promise.all(k.filter(function (n) { return n.indexOf('m40-v') === 0 && n !== VERSIONE; }).map(function (n) { return caches.delete(n); }));
   }).then(function () { return self.clients.claim(); }));
 });
-/* Risponde subito dalla copia sul telefono (anche senza linea); se c'è linea aggiorna la copia in background. */
+/* I file della versione installata restano insieme fino all'attivazione della nuova cache. */
 self.addEventListener('fetch', function (e) {
   if (e.request.method !== 'GET' || new URL(e.request.url).origin !== location.origin) return;
   e.respondWith(caches.open(VERSIONE).then(function (c) {
     return c.match(e.request, {ignoreSearch: true}).then(function (cached) {
-      var rete = fetch(e.request, {cache: 'no-cache'}).then(function (r) { if (r && r.ok) c.put(e.request, r.clone()); return r; }).catch(function () { return cached; });
-      return cached || rete;
+      return cached || fetch(e.request);
     });
   }));
 });

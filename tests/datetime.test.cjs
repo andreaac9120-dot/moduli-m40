@@ -1,0 +1,16 @@
+const fs=require('fs'),vm=require('vm'),assert=require('assert'),path=require('path');
+const source=fs.readFileSync(path.join(__dirname,'../app.js'),'utf8');
+const ctx={};vm.createContext(ctx);
+vm.runInContext(source.slice(source.indexOf('function dueCifre('),source.indexOf('var app =')),ctx);
+const now=new Date(2026,9,20,12,34);
+assert.strictEqual(ctx.dataCorrente(now),'20/10/2026');
+assert.strictEqual(ctx.oraCorrente(now),'12:34');
+assert.strictEqual(ctx.cambiaData('31/12/2026',1),'01/01/2027');
+assert.strictEqual(ctx.cambiaData('01/03/2024',-1),'29/02/2024');
+assert.strictEqual(ctx.cambiaData('31/02/2026',1,now),'21/10/2026');
+assert.strictEqual(ctx.cambiaOra('23:59',1).ora,'00:00');
+assert.strictEqual(ctx.cambiaOra('23:59',1).giorni,1);
+assert.strictEqual(ctx.cambiaOra('00:00',-1).ora,'23:59');
+assert.strictEqual(ctx.cambiaOra('00:00',-1).giorni,-1);
+assert.strictEqual(ctx.cambiaOra('',1,now).ora,'12:35');
+console.log('Data e ora locali, frecce e passaggio della mezzanotte OK');
