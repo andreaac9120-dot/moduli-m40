@@ -29,7 +29,7 @@ App per compilare i moduli M.40 (D.L. B.A., D.L. B.m./B.ca., TELEC BA, TELEC Bca
 
 - **RFI / FERROVIENORD**: in alto nella schermata principale scegli la rete; vedi solo i suoi moduli. L'app ricorda l'ultima scelta.
 - **☾ Notte / ☀ Giorno**: cambia il tema (chiaro ad alto contrasto di giorno, scuro di notte). La scelta resta memorizzata.
-- **⋮ → Impostazioni**: salva nome, cognome e matricola. Nei nuovi moduli D.L. il cognome viene proposto come Agente ricevente; negli altri moduli come AdC, escluso il 0229 FERROVIENORD. Nei moduli liberi RFI il PDF riporta nome, cognome e matricola in basso. Nel 0229 FERROVIENORD scegli chi trasmette; il profilo non firma automaticamente. Ogni modulo confermato conserva i dati personali usati al momento della compilazione.
+- **⋮ → Impostazioni**: salva nome, cognome e matricola. Nei nuovi moduli D.L. il cognome viene proposto come Agente ricevente; negli altri moduli come AdC. Nel 0229 FERROVIENORD viene proposto nel campo modificabile **Il mio cognome** e stampato come trasmittente o ricevente secondo la direzione scelta. Nei moduli liberi RFI il PDF riporta nome, cognome e matricola in basso. Nel 0229 FERROVIENORD scegli chi trasmette; il profilo non firma automaticamente. Ogni modulo confermato conserva i dati personali usati al momento della compilazione.
 - **Compila**: scegli il modulo. La prima volta l'app chiede da che numero partire.
 - Quando inizi un nuovo modulo, data e ora sono compilate con i valori locali correnti. Le frecce accanto alla data cambiano un giorno per tocco; quelle accanto all'ora cambiano un minuto per tocco, aggiornando anche la data quando si supera la mezzanotte. Puoi sempre scrivere i valori direttamente.
 - Il modulo è diviso in sezioni (Dati treno, Trasmissione, Ordine, Prescrizioni, Prescrizione libera, Riepilogo). In alto vedi sempre quante prescrizioni hai selezionato e quanti dati mancano.
@@ -67,7 +67,7 @@ Ogni modulo ha il **suo progressivo**, indipendente dagli altri.
 
 **Moduli con prescrizioni numerate da barrare** (M.40 D.L., M.40 TELEC, 0229/2): nei due M.40 D.L. puoi indicare con il flag se la compilazione è effettuata dal DM oppure dall'A.G.; il PDF barra la rispettiva colonna.
 
-**Moduli a testo libero** (M.40 normale, M.40 a, 0229): il dispaccio può andare in entrambe le direzioni. Scegli «Si ordina» o «Si dà avviso», scrivi il destinatario e il testo. Nei due M.40 RFI il cognome AdC viene ricordato e proposto automaticamente. Nel 0229 FERROVIENORD inserisci solo il tuo progressivo/saltuario e quello del DM/DCO, poi scegli se ricevi o invii: il PDF colloca i due numeri nei campi corretti senza chiedere un terzo numero.
+**Moduli a testo libero** (M.40 normale, M.40 a, 0229): il dispaccio può andare in entrambe le direzioni. Scegli «Si ordina» o «Si dà avviso», scrivi il destinatario e il testo. Nei due M.40 RFI il cognome AdC viene ricordato e proposto automaticamente. Nel 0229 FERROVIENORD verifica i cognomi dei due agenti e inserisci il tuo progressivo/saltuario e quello del DM/DCO, poi scegli se ricevi o invii: il PDF colloca i due numeri nei campi corretti senza chiedere un terzo numero.
 
 ## 4. Copia di sicurezza (importante)
 

@@ -1,6 +1,6 @@
 /* Funzionamento offline. A ogni aggiornamento dell'app aumentare VERSIONE.
    I file vengono sempre scaricati freschi dal server (cache: 'reload'), non dalla memoria temporanea del browser. */
-var VERSIONE = 'm40-v1.17.2-icona';
+var VERSIONE = 'm40-v1.17.3-agenti';
 var FILE = ['./', 'index.html', 'style.css', 'moduli.js', 'cvr-data.js', 'app.js', 'pdf-export.js', 'vendor/pdf-lib.min.js', 'assets/moduli-originali.pdf', 'assets/moduli-ferrovienord.pdf', 'manifest.webmanifest', 'icon-192.png', 'icon-512.png', 'icon-maskable-512.png'];
 
 self.addEventListener('install', function (e) {

@@ -44,6 +44,10 @@ const folder=process.argv[2] || '/tmp/m40-v2';fs.mkdirSync(folder,{recursive:tru
  const fnRecord={moduloId:'fn_0229',nome:'Modulo 0229 FERROVIENORD',versioneModello:'v4 · 20/10/2026',prog:7,sal:'01',campi:{sal:'01',sta:'TORINO',trn:'12345',dat:'20/10/2026',ora:'12:30',agt:'DCO ROSSI',agn:'5',ags:'02',dest:'AdC',testo:'Testo di prova'},scelta:{oa:'Si ordina',direzione:'ricevo'},firmatario:{nome:'Mario',cognome:'Bianchi',matricola:'98765'}};
  fs.writeFileSync(path.join(folder,'fn_0229-ricevo.pdf'),await pdf.build(fnRecord,fnBytes));
  fs.writeFileSync(path.join(folder,'fn_0229-invio.pdf'),await pdf.build({...fnRecord,scelta:{...fnRecord.scelta,direzione:'invio'}},fnBytes));
+ for(const direzione of ['invio','ricevo']){
+  const current={...fnRecord,versioneModello:'v5 · 24/10/2026',campi:{...fnRecord.campi,adc:'BIANCHI'},scelta:{...fnRecord.scelta,direzione}};
+  fs.writeFileSync(path.join(folder,'fn_0229-v5-'+direzione+'.pdf'),await pdf.build(current,fnBytes));
+ }
  const fnOld={...fnRecord,versioneModello:'v3 · 20/10/2026',campi:{...fnRecord.campi,ord:'DCO VERDI',adc:'AGENTE NERI',ricevProg:'8',ricevSal:'03'}};
  fs.writeFileSync(path.join(folder,'fn_0229-v3.pdf'),await pdf.build(fnOld,fnBytes));
  const fnLegacy={...fnOld,versioneModello:'v1 · 11/10/2026',campi:{...fnOld.campi,adc:'BIANCHI'}};

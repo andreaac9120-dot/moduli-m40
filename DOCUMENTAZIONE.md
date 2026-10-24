@@ -48,10 +48,10 @@ Ogni modello ha un **contatore indipendente**. Per esempio, confermare un M.40 D
 Nel menu **⋮ → Impostazioni** inserisci **nome**, **cognome** e **numero di matricola**, quindi premi **Salva profilo**. Servono tutti e tre per salvare il profilo.
 
 - Nei due M.40 D.L. il cognome viene proposto nel campo **Agente ricevente**.
-- Negli altri moduli, escluso il 0229 FERROVIENORD, il cognome viene proposto nel campo **AdC**.
+- Negli altri moduli RFI e nel 0229/2 FERROVIENORD, il cognome viene proposto nel campo **AdC**.
 - Nei due moduli RFI a testo libero — M.40 normale e M.40 a — il PDF riporta in basso nome, cognome e matricola del profilo, quando presenti.
-- Nel **0229 FERROVIENORD** nessuna firma viene assegnata automaticamente al tuo profilo. Scegli se ricevi dal DM/DCO o se invii al DM/DCO.
-- Se stai compilando una bozza RFI e aggiorni il profilo, la firma della bozza viene aggiornata. Un cognome già scritto manualmente e diverso dal precedente rimane nel campo.
+- Nel **0229 FERROVIENORD** il campo **Il mio cognome** viene proposto dal profilo ed è modificabile. Scegli se ricevi dal DM/DCO o se invii al DM/DCO: il cognome viene stampato nel ruolo corrispondente, senza aggiungere una firma.
+- Se aggiorni il profilo, il cognome della bozza viene aggiornato se vuoto o uguale al precedente; nei moduli RFI viene aggiornata anche la firma. Un cognome già scritto manualmente e diverso dal precedente rimane nel campo.
 
 Puoi correggere il cognome proposto nel singolo modulo. Ogni modulo confermato conserva i dati del profilo associati **al momento della compilazione**. Modificare le impostazioni in seguito non cambia i dati già archiviati.
 
@@ -100,6 +100,8 @@ Nei soli due moduli **M.40 D.L.** il modello ha due colonne di numeri: **DM a si
 
 Il cognome personale dei due D.L. viene collocato in basso nel campo **Agente ricevente**. Nel **0229/2 FERROVIENORD** c'è una sola colonna di numeri da barrare: il flag A.G. non compare.
 
+La conferma e il PDF della bozza richiedono i cognomi di entrambi gli agenti in tutti gli otto modelli.
+
 ### Retro del 0229/2
 
 Il fronte del **Mod. 0229/2** contiene le prescrizioni. Il retro fornito è una **guida per la notifica**: si apre con **Consulta il retro** e resta separato dal PDF compilato.
@@ -111,14 +113,14 @@ Questa modalità riguarda **M.40 normale**, **M.40 a** e **FERROVIENORD 0229**.
 1. Scegli **Si ordina** oppure **Si dà avviso**.
 2. Scrivi il destinatario nel campo successivo e poi il **testo esatto del dispaccio**.
 3. Nei moduli RFI compila i dati di trasmissione, il numero del DCO/DM e il cognome AdC.
-4. Nel **0229 FERROVIENORD** inserisci il tuo progressivo/saltuario e quello del DM/DCO, come nel M.40 normale. Scegli **Ricevo dal DM/DCO** oppure **Invio al DM/DCO**: l'app mette il numero di chi invia nel campo dell'agente trasmittente e quello dell'altro nel campo del ricevente. Inserisci il cognome del DM/DCO; il tuo nome non viene aggiunto come firma. L'app aggiunge il numero del treno accanto al destinatario solo se non è già presente.
+4. Nel **0229 FERROVIENORD** inserisci il tuo progressivo/saltuario e quello del DM/DCO, come nel M.40 normale. Scegli **Ricevo dal DM/DCO** oppure **Invio al DM/DCO**: l'app mette il numero di chi invia nel campo dell'agente trasmittente e quello dell'altro nel campo del ricevente. Inserisci il cognome del DM/DCO e verifica **Il mio cognome**, proposto dal profilo. L'app aggiunge il numero del treno accanto al destinatario solo se non è già presente.
 
 | Scelta nel 0229 | Numero dell'agente trasmittente sul PDF | Numero comunicato dal ricevente sul PDF |
 | --- | --- | --- |
 | Ricevo dal DM/DCO | Numero del DM/DCO | Il tuo numero |
 | Invio al DM/DCO | Il tuo numero | Numero del DM/DCO |
 
-**Esempio:** con tuo numero **7/01** e numero DM/DCO **5/02**, scegliendo **Ricevo** il modello mostra **5/02** come numero del trasmittente e **7/01** come numero del ricevente. Scegliendo **Invio**, la posizione dei due numeri si inverte. Il numero del modulo mostrato in alto resta **7/01** in entrambi i casi. Il cognome del DM/DCO è collocato nel riquadro corrispondente al suo ruolo; il campo di firma dell'altro agente resta da completare secondo la procedura operativa.
+**Esempio:** con tuo numero **7/01** e numero DM/DCO **5/02**, scegliendo **Ricevo** il modello mostra **5/02** come numero del trasmittente e **7/01** come numero del ricevente. Scegliendo **Invio**, la posizione dei due numeri si inverte. Il numero del modulo mostrato in alto resta **7/01** in entrambi i casi. Il cognome del DM/DCO è collocato nel riquadro corrispondente al suo ruolo; il tuo cognome viene riportato nel riquadro dell’altro agente.
 
 Nel PDF la dizione non scelta viene depennata. Il testo viene collocato nel riquadro del modello. Se non entra, una parte viene riportata su una pagina aggiuntiva. **Solo nei due moduli RFI liberi** il profilo personale completo riporta automaticamente nome, cognome e matricola in basso. Nel **0229 FERROVIENORD** il numero del ricevente deriva dai due numeri già inseriti e dalla direzione scelta; la firma non viene inserita automaticamente. I moduli 0229 archiviati con versioni precedenti conservano la disposizione dei dati usata quando furono confermati.
 
