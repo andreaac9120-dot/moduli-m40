@@ -116,7 +116,7 @@
     }
     if(cfg.kind==='fn_libero'){
       var fnRecipient=clean(v.dest||'');
-      var fnNew=/^v4\b/.test(r.versioneModello||''),fnSend=fnNew&&r.scelta&&r.scelta.direzione==='invio';
+      var fnNew=/^v[45]\b/.test(r.versioneModello||''),fnSend=fnNew&&r.scelta&&r.scelta.direzione==='invio';
       var fnOwn=clean(r.prog)+'/'+clean(r.sal||v.sal||''),fnDm=clean(v.agn)+'/'+clean(v.ags);
       if(v.trn&&!fnRecipient.includes(clean(v.trn)))fnRecipient+=(fnRecipient?' - ':'')+'treno '+clean(v.trn);
       // Il numero 01 è già stampato sul modello: viene sostituito dal numero corrente.
@@ -139,6 +139,11 @@
         if(v.agt){
           if(fnSend){erase(274,300,96,11);put(v.agt,[275,310,91],'DM/DCO ricevente',7.5);}
           else{erase(150,300,96,11);put(v.agt,[151,310,93],'DM/DCO trasmittente',7.5);}
+        }
+        // Solo i nuovi record contengono il cognome verificato nel ruolo scelto.
+        if(/^v5\b/.test(r.versioneModello||'') && v.adc){
+          if(fnSend){erase(150,300,96,11);put(v.adc,[151,310,93],'Agente trasmittente',7.5);}
+          else{erase(274,300,96,11);put(v.adc,[275,310,91],'Agente ricevente',7.5);}
         }
         var fnOther=fnSend?fnDm:fnOwn;
         erase(84,326,24,11);put(fnOther.split('/')[0],[85,335,22],'Progressivo ricevente',7.5);

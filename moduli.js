@@ -257,7 +257,7 @@ var MODULI = [
   rete: "FERROVIENORD",
   tipo: "libero",
   nome: "Modulo 0229 FERROVIENORD",
-  versione: "v4 · 20/10/2026",
+  versione: "v5 · 24/10/2026",
   campi: [
     {id: "sta", label: "Località di servizio"},
     {id: "trn", label: "Treno"},
@@ -265,9 +265,10 @@ var MODULI = [
     {tipo: "ps", label: "Progressivo / saltuario (mio)"},
     {id: "ora", label: "Ora", ph: "hh:mm"},
     {id: "agt", label: "Cognome DM / DCO", span: 2},
+    {id: "adc", label: "Il mio cognome (proposto dal profilo)", span: 2},
     {tipo: "ag", label: "N° DM / DCO (progressivo / saltuario)"}
   ],
   destLabel: "a",
-  note: "Nel 0229 servono solo il tuo progressivo/saltuario e quello del DM/DCO. Scegli chi trasmette il dispaccio per collocare i due numeri nei campi corretti. La firma non viene inserita automaticamente."
+  note: "Nel 0229 inserisci il tuo progressivo/saltuario e quello del DM/DCO e verifica i cognomi dei due agenti. Scegli chi trasmette il dispaccio per collocare i due numeri nei campi corretti. La firma non viene inserita automaticamente."
 }
 ];

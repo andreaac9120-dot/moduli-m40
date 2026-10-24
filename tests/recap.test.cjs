@@ -15,8 +15,8 @@ assert(!ctx.riepilogo(m,d,false).includes('DM (sinistra)'));d.checks=[10,2,7];as
 assert(!html.includes('<img'));assert(html.includes('&lt;img'));assert(html.includes('Prescrizione 1'));assert(html.includes('Prescrizione 3'));assert(!html.includes('Prescrizione 2</h3>'));assert(html.includes('valore-letto">partenza'));assert(!html.includes('arrivo/partenza'));assert(html.includes('Saltuario DCO / DM'));assert(html.includes('>05</strong>'));assert(html.includes('data-read-step'));
 const fn=ctx.MODULI.find(x=>x.id==='fn_0229');
 assert(fn.campi.filter(x=>x.tipo==='ps'||x.tipo==='ag').length===2);
-assert(!fn.campi.some(x=>['ricevProg','ricevSal','ord','adc'].includes(x.id)));
-const fnDraft={moduloId:'fn_0229',prog:7,v:{sal:'01',sta:'Torino',trn:'12345',dat:'20/10/2026',ora:'12:30',agt:'ROSSI',agn:'5',ags:'02',dest:'AdC',testo:'Prova'},checks:[],pv:{},scelta:{oa:'Si ordina',direzione:'invio'},libera:false};
+assert(!fn.campi.some(x=>['ricevProg','ricevSal','ord'].includes(x.id)));
+const fnDraft={moduloId:'fn_0229',prog:7,v:{sal:'01',sta:'Torino',trn:'12345',dat:'20/10/2026',ora:'12:30',adc:'BIANCHI',agt:'ROSSI',agn:'5',ags:'02',dest:'AdC',testo:'Prova'},checks:[],pv:{},scelta:{oa:'Si ordina',direzione:'invio'},libera:false};
 assert(ctx.controlla(fn,fnDraft).length===0);
 assert(ctx.riepilogoHtml(fn,fnDraft).includes('Io invio al DM/DCO'));
 assert(ctx.riepilogo(fn,fnDraft,false).includes('N° DM/DCO: 5/02'));
